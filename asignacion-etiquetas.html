@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CR — OPS</title>
+  <link href="https://unpkg.com/primeng@17.18.0/resources/themes/lara-light-blue/theme.css" rel="stylesheet">
+  <link href="https://unpkg.com/primeicons@7.0.0/primeicons.css" rel="stylesheet" crossorigin="anonymous">
+  <style>
+    /* ======================================================
+       DESIGN TOKENS — idénticos al catálogo-etiquetas.html
+    ====================================================== */
+    :root {
+      --primary-color: #0d6efd;
+      --primary-color-hover: #0b5ed7;
+      --primary-color-active: #0a58ca;
+      --primary-color-text: #ffffff;
+      --primary-50: #eaf1fe;
+      --primary-100: #cfe2ff;
+      --focus-ring: rgba(13, 110, 253, 0.25);
+      --text-color: #212529;
+      --text-color-secondary: #6c757d;
+      --text-heading: #212529;
+      --surface-border: #dee2e6;
+      --surface-50: #f6f7f9;
+      --surface-100: #f3f4f6;
+      --surface-200: #e9ecef;
+      --surface-300: #ced4da;
+      --surface-700: #212529;
+      --surface-hover: #eef4ff;
+      --breadcrumb-link: #0d6efd;
+      --breadcrumb-link-hover: #0a58ca;
+      --breadcrumb-muted: #6c757d;
+      --btn-cancel: #6c757d;
+      --btn-cancel-hover: #5c636a;
+      --btn-success: #4caf50;
+      --btn-success-hover: #43a047;
+      --link-color: #0d6efd;
+      --link-hover: #0a58ca;
+      --danger-color: #dc3545;
+      --danger-hover: #bb2d3b;
+      --section-gap: 1rem;
+      --table-head-bg: #ffffff;
+      --table-head-text: #212529;
+      --table-border: #dee2e6;
+      --table-stripe: #f6f7f9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+      background: #fff;
+      color: var(--text-color);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .pi { font-style: normal; display: inline-block; min-width: 1em; line-height: 1; }
+
+    /* ── Layout ── */
+    .page-shell { min-height: 100vh; display: flex; flex-direction: column; }
+    .page-content { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; }
+    .page-content--wide { max-width: 1280px; }
+    .page-footer { margin-top: auto; padding: 0.65rem 1rem; text-align: center; font-size: 0.8rem; color: #9ca3af; background: #f3f4f6; border-top: 1px solid #e5e7eb; }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb { font-size: 0.875rem; color: var(--breadcrumb-muted); margin-bottom: 0.75rem; }
+    .breadcrumb ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; list-style: none; }
+    .breadcrumb li + li::before { content: "/"; margin-right: 0.35rem; color: var(--breadcrumb-muted); }
+    .breadcrumb a { color: var(--breadcrumb-link); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--breadcrumb-link-hover); text-decoration: underline; }
+    .breadcrumb li[aria-current="page"] { color: var(--breadcrumb-muted); }
+
+    /* ── Titles ── */
+    .page-title { font-size: 1.8rem; font-weight: 600; color: var(--text-heading); margin-bottom: 1.25rem; }
+    .page-header-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.45rem 0.9rem;
+      min-height: 2.375rem;
+      border: 1px solid transparent;
+      background: #fff;
+      border-radius: 0.25rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: background-color .12s ease, border-color .12s ease, box-shadow .12s ease;
+      white-space: nowrap;
+    }
+    .btn:focus-visible { outline: none; box-shadow: 0 0 0 0.2rem var(--focus-ring); }
+    .btn-secondary { background: var(--btn-cancel); color: #fff; border-color: var(--btn-cancel); }
+    .btn-secondary:hover:not(:disabled) { background: var(--btn-cancel-hover); border-color: var(--btn-cancel-hover); }
+    .btn-success { background: var(--btn-success); color: #fff; border-color: var(--btn-success); }
+    .btn-success:hover:not(:disabled) { background: var(--btn-success-hover); border-color: var(--btn-success-hover); }
+    .btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-color-hover); border-color: var(--primary-color-active); }
+    .btn-outlined { background: #fff; color: #212529; border-color: #ced4da; }
+    .btn-outlined:hover:not(:disabled) { background: #f8f9fa; border-color: #adb5bd; }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+    .btn-icon { padding: 0.4rem 0.65rem; }
+    .btn-icon .pi { font-size: 0.9rem; }
+
+    /* ── Form controls ── */
+    .form-input, .form-select {
+      width: 100%;
+      min-height: 2.375rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.9rem;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      background: #fff;
+      color: var(--text-color);
+      font-family: inherit;
+    }
+    .form-input:hover, .form-select:hover { border-color: #94a3b8; }
+    .form-input:focus, .form-select:focus { outline: none; border-color: #86b7fe; box-shadow: 0 0 0 0.2rem var(--focus-ring); }
+    .form-input.invalid { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220,38,38,.12); }
+    .field-label { font-size: 0.875rem; font-weight: 500; color: var(--text-color); display: block; margin-bottom: 0.3rem; }
+    .field-error { font-size: 0.75rem; color: #dc2626; }
+
+    /* ── Toolbar ── */
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .table-toolbar__left { display: flex; flex-direction: column; gap: 0.35rem; }
+    .table-toolbar__right { display: flex; align-items: center; gap: 0.5rem; }
+
+    /* ── Col chooser link ── */
+    .col-chooser-link {
+      font-size: 0.875rem;
+      color: var(--link-color);
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-weight: 500;
+      border: none;
+      background: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    .col-chooser-link:hover { text-decoration: underline; color: var(--link-hover); }
+    .col-chooser-panel { margin-bottom: 0.5rem; }
+    .col-chooser-panel.hidden { display: none; }
+    .col-chooser-items { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 0.75rem; }
+    .col-chooser-item { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; cursor: pointer; }
+    .col-chooser-item input { accent-color: var(--primary-color); width: 1rem; height: 1rem; }
+
+    /* ── Summary text ── */
+    .grid-summary { font-size: 0.875rem; color: var(--text-color); }
+    .grid-summary strong { font-weight: 600; }
+
+
+    /* ── Data table ── */
+    .card { overflow: visible; }
+    .data-table-scroll-pane { width: 100%; overflow-x: auto; }
+    .data-table { border-collapse: collapse; font-size: 0.875rem; width: 100%; background: #fff; }
+    .data-table th, .data-table td { padding: 0.5rem 0.65rem; border: 1px solid var(--table-border); vertical-align: middle; text-align: left; }
+    .data-table thead tr.header-row th {
+      font-weight: 700;
+      color: var(--link-color);
+      border-bottom: 2px solid var(--table-border);
+      white-space: nowrap;
+      background: var(--table-head-bg);
+      cursor: pointer;
+      user-select: none;
+    }
+    .data-table thead tr.header-row th:hover { text-decoration: underline; }
+    .data-table thead tr.header-row th.col-no-sort { cursor: default; }
+    .data-table thead tr.header-row th.col-no-sort:hover { text-decoration: none; }
+    .data-table thead tr.filter-row th { padding: 4px 6px; background: var(--table-head-bg); border-top: none; }
+    .data-table tbody tr { background: #fff; }
+    .data-table tbody tr:nth-child(odd) { background: var(--table-stripe); }
+    .data-table tbody tr:hover td { background: var(--surface-hover); }
+    .col-hidden { display: none !important; }
+    .col-center { text-align: center !important; }
+
+    /* ── Table filters ── */
+    .table-filter-input {
+      width: 100%;
+      height: 30px;
+      padding: 0 6px;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      color: var(--text-color);
+      background: #fff;
+    }
+    .table-filter-input:focus { outline: none; border-color: #86b7fe; box-shadow: 0 0 0 0.2rem var(--focus-ring); }
+    .table-filter-select {
+      width: 100%;
+      height: 30px;
+      padding: 0 4px;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      color: var(--text-color);
+      background: #fff;
+    }
+
+    /* ── Sort icons ── */
+    .sort-icon { font-size: 0.7rem; margin-left: 0.3rem; color: var(--link-color); vertical-align: middle; }
+
+    /* ── Row actions (+) ── */
+    .action-menu-wrap { position: relative; display: inline-block; }
+    .btn-action-plus {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 6px;
+      background: #212529;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+      transition: background .1s;
+    }
+    .btn-action-plus:hover { background: #343a40; }
+    .btn-action-plus:disabled { background: #adb5bd; cursor: not-allowed; }
+    .btn-assign-etq {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 6px;
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .btn-assign-etq:hover { background: var(--primary-color-hover); }
+    .btn-assign-etq.is-disabled { background: #adb5bd; cursor: not-allowed; pointer-events: none; }
+    .action-menu-panel {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid var(--surface-200);
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.12);
+      padding: 0.3rem 0;
+      z-index: 200;
+    }
+    .action-menu-panel.hidden { display: none; }
+    .action-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: #212529;
+      text-align: left;
+      cursor: pointer;
+    }
+    .action-menu-item:hover { background: #f1f5f9; }
+    .action-menu-item:disabled, .action-menu-item.is-disabled { color: #adb5bd; cursor: not-allowed; pointer-events: none; }
+    .action-menu-item .pi { font-size: 0.9rem; color: var(--link-color); flex-shrink: 0; }
+
+    /* ── Table links ── */
+    .td-link { color: var(--link-color); text-decoration: none; cursor: pointer; }
+    .td-link:hover { text-decoration: underline; color: var(--link-hover); }
+
+    /* ── Status checkmark ── */
+    .status-check { color: #212529; font-size: 1rem; }
+    .status-reprocesar { color: var(--link-color); font-size: 1rem; cursor: pointer; }
+    .status-reprocesar:hover { color: var(--link-hover); }
+
+    /* ── Paginator (listado principal y modal) ── */
+    .table-paginator { display: flex; align-items: center; justify-content: center; padding: 0.85rem 0 0; border-top: none; background: transparent; }
+    .table-paginator__cluster { display: inline-flex; align-items: center; gap: 0; }
+    .table-paginator__pages { display: inline-flex; align-items: center; gap: 0; }
+    .table-pag-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 2rem; height: 2rem; padding: 0 0.5rem;
+      border: 1px solid #dee2e6; margin-left: -1px;
+      border-radius: 0; background: #fff; color: var(--link-color); cursor: pointer; font-size: 0.875rem;
+    }
+    .table-paginator__cluster > .table-pag-btn:first-child { border-top-left-radius: .25rem; border-bottom-left-radius: .25rem; margin-left: 0; }
+    .table-paginator__cluster > .table-pag-btn:last-of-type { border-top-right-radius: .25rem; border-bottom-right-radius: .25rem; }
+    .table-pag-btn:hover:not(:disabled) { background: #e9ecef; color: var(--link-hover); z-index: 1; }
+    .table-pag-btn.is-active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); font-weight: 600; z-index: 2; }
+    .table-pag-btn:disabled { color: #adb5bd; background: #fff; cursor: default; pointer-events: none; }
+    .table-paginator__select { height: 2rem; border: 1px solid #ced4da; border-radius: .25rem; font-size: 0.875rem; padding: 0 0.5rem; margin-left: 0.75rem; }
+
+    /* ── Utilities ── */
+    .hidden { display: none !important; }
+    .view-hidden { display: none !important; }
+
+    /* ── Modal ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 16px 40px rgba(15,23,42,.2);
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-card__head {
+      padding: 1.1rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--surface-200);
+      flex-shrink: 0;
+    }
+    .modal-card__title { font-size: 1rem; font-weight: 600; color: #334155; margin-bottom: 0.15rem; }
+    .modal-card__subtitle { font-size: 0.8125rem; color: var(--text-color-secondary); }
+    .modal-card__body { padding: 1rem 1.25rem; overflow-y: auto; flex: 1; }
+    .modal-card__actions { padding: 0.9rem 1.25rem; border-top: 1px solid var(--surface-200); display: flex; justify-content: flex-end; gap: 0.5rem; flex-shrink: 0; }
+
+    /* ── Modal controls row ── */
+    .modal-controls-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .modal-controls-row .ctrl-field { flex: 0 0 auto; width: 280px; min-width: 180px; }
+
+    /* ── Info inline (solo icono + texto, sin estilo banner) ── */
+    .info-callout {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8125rem;
+      color: var(--text-color-secondary);
+      margin-bottom: 0.75rem;
+    }
+    .info-callout .pi { font-size: 0.875rem; flex-shrink: 0; color: var(--text-color-secondary); }
+    .info-callout.warning { color: #92400e; }
+    .info-callout.warning .pi { color: #f59e0b; }
+
+    /* ── Assignment table ── */
+    .asgn-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .asgn-table th, .asgn-table td { padding: 0.55rem 0.7rem; border: 1px solid var(--table-border); text-align: left; vertical-align: middle; }
+    .asgn-table thead th { background: var(--table-head-bg); font-weight: 700; color: var(--table-head-text); font-size: 0.8125rem; white-space: nowrap; }
+    .asgn-table tbody tr { height: 2.75rem; }
+    .asgn-table tbody tr:hover td { background: var(--surface-hover); }
+    .asgn-table td.cell-editable { position: relative; }
+    /* Tarima header row (con bultos) — fila padre que abarca toda la anchura */
+    .tarima-header-row td { background: var(--table-stripe); border-bottom: 1px solid var(--table-border); }
+    .tarima-header-row:hover td { background: var(--surface-hover) !important; }
+    .tarima-group-cell { padding: 0.45rem 0.7rem !important; }
+    .tarima-header-row .tarima-label { font-weight: 700; color: #334155; font-size: 0.875rem; }
+    /* Bulto child row */
+    .bulto-child-row td { background: #fff; }
+    .bulto-child-row:hover td { background: var(--surface-hover) !important; }
+    .bulto-indent-col { width: 28px; border-right: none; background: var(--table-stripe); }
+    /* Tarima-only row (sin bultos) */
+    .tarima-only-row td { background: var(--table-stripe); }
+    .tarima-only-row:hover td { background: var(--surface-hover) !important; }
+    .tarima-only-row .tarima-label { font-weight: 700; color: #334155; }
+    /* Badge contador de bultos */
+    .badge-count { display: inline-block; background: #e2e8f0; color: #475569; font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-weight: 600; margin-left: 0.4rem; vertical-align: middle; }
+
+    /* ── Etiqueta cell styles ── */
+    .etq-cell-disp { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .etq-assigned { font-weight: 600; color: var(--primary-color); }
+    .etq-empty { color: #adb5bd; font-style: italic; }
+    .edit-inline-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.35rem; height: 1.35rem; border-radius: 50%;
+      border: none; background: transparent; color: #94a3b8;
+      cursor: pointer; font-size: 0.75rem; transition: background .1s, color .1s; flex-shrink: 0;
+    }
+    .edit-inline-btn:hover { background: #e2e8f0; color: var(--link-color); }
+    .etq-blocked {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: #adb5bd;
+      font-size: 0.75rem;
+    }
+    .etq-blocked .pi { font-size: 0.8rem; }
+
+    /* ── Inline edit ── */
+    /* Formulario de edición inline: posición absoluta para no mover la fila */
+    .inline-edit-wrap {
+      position: absolute;
+      top: 50%; left: 0;
+      transform: translateY(-50%);
+      display: flex; align-items: center; gap: 0.35rem;
+      background: #fff;
+      border: 1px solid var(--primary-color);
+      border-radius: 0.25rem;
+      padding: 0.2rem 0.4rem;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.12);
+      z-index: 10;
+      white-space: nowrap;
+    }
+    .inline-edit-input {
+      width: 88px;
+      height: 1.625rem;
+      padding: 0 0.4rem;
+      border: 1px solid var(--primary-color);
+      border-radius: 0.2rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text-color);
+    }
+    .inline-edit-input:focus { outline: none; box-shadow: 0 0 0 0.15rem var(--focus-ring); }
+    .inline-edit-input.invalid { border-color: #dc2626; }
+    .inline-edit-confirm {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.4rem; height: 1.4rem; border-radius: 50%;
+      background: var(--btn-success); color: #fff; border: none; cursor: pointer; font-size: 0.7rem; flex-shrink: 0;
+    }
+    .inline-edit-cancel {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.4rem; height: 1.4rem; border-radius: 50%;
+      background: var(--btn-cancel); color: #fff; border: none; cursor: pointer; font-size: 0.7rem; flex-shrink: 0;
+    }
+    .inline-edit-confirm:hover { background: var(--btn-success-hover); }
+    .inline-edit-cancel:hover { background: var(--btn-cancel-hover); }
+    .edit-action-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.6rem; height: 1.6rem; border-radius: 50%;
+      border: none; background: transparent; color: var(--link-color);
+      cursor: pointer; font-size: 0.85rem; transition: background .1s;
+    }
+    .edit-action-btn:hover { background: var(--primary-50); }
+
+    /* ── Tarima section header in modal ── */
+    .asgn-section-head td {
+      background: var(--surface-100) !important;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--text-color-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 0.35rem 0.7rem;
+    }
+
+    /* ── Toast ── */
+    .p-toast { position: fixed; top: 20px; right: 20px; width: 25rem; max-width: calc(100% - 40px); z-index: 1400; pointer-events: none; }
+    .p-toast .p-toast-message { margin: 0 0 0.75rem; border-radius: 6px; overflow: hidden; pointer-events: all; }
+    .p-toast .p-toast-message-content { display: flex; align-items: flex-start; padding: 0.85rem 1rem; }
+    .p-toast .p-toast-message-icon { font-size: 1.1rem; margin-top: 0.1rem; flex-shrink: 0; }
+    .p-toast .p-toast-message-text { flex: 1; margin-left: 0.65rem; font-size: 0.875rem; }
+    .p-toast .p-toast-message-detail { color: inherit; }
+    .p-toast-icon-close { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border: none; background: transparent; cursor: pointer; border-radius: 50%; margin-left: auto; flex-shrink: 0; }
+
+    /* ── Tooltip ── */
+    .app-tooltip {
+      position: fixed; z-index: 2000;
+      background: #212529; color: #fff;
+      padding: 0.3rem 0.55rem; border-radius: 4px;
+      font-size: 0.72rem; font-weight: 500; white-space: nowrap;
+      pointer-events: none; box-shadow: 0 2px 8px rgba(15,23,42,.25);
+      opacity: 0; transition: opacity .1s ease;
+    }
+    .app-tooltip.is-visible { opacity: 1; }
+    .app-tooltip::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); border: 5px solid transparent; }
+    .app-tooltip[data-placement="top"]::after { top: 100%; border-top-color: #212529; }
+    .app-tooltip[data-placement="bottom"]::after { bottom: 100%; border-bottom-color: #212529; }
+
+    @media (max-width: 900px) {
+      .page-content { padding: 1rem; }
+      .modal-controls-row { flex-direction: column; }
+      .asgn-table { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-shell">
+  <main class="page-content page-content--wide" id="mainContent">
+
+    <!-- ╔══════════════════════════════════════════════════╗ -->
+    <!-- ║              LISTADO DE CRs                      ║ -->
+    <!-- ╚══════════════════════════════════════════════════╝ -->
+    <div id="listView">
+
+      <nav class="breadcrumb" aria-label="Ruta de navegación">
+        <ol>
+          <li><a href="#">Inicio</a></li>
+          <li aria-current="page">CR</li>
+        </ol>
+      </nav>
+
+      <h1 class="page-title">CR</h1>
+
+      <div class="table-toolbar">
+        <div class="table-toolbar__left">
+          <button type="button" class="col-chooser-link" id="colChooserBtn" aria-expanded="false" aria-controls="colChooserPanel">
+            Mostrar/Ocultar Columnas
+          </button>
+          <div id="colChooserPanel" class="col-chooser-panel hidden" role="group" aria-label="Selección de columnas">
+            <div class="col-chooser-items" id="colChooserItems"></div>
+            <button type="button" class="btn btn-success" id="colChooserApply" style="font-size:0.8rem; min-height:1.8rem; padding: 0.3rem 0.7rem;">Aplicar</button>
+          </div>
+          <span class="grid-summary" id="listSummary"></span>
+        </div>
+        <div class="table-toolbar__right">
+          <button type="button" class="btn btn-primary btn-icon">
+            <i class="pi pi-upload" aria-hidden="true"></i>
+            Importar deliveries desde archivo
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="data-table-scroll-pane">
+          <table class="data-table" id="listTable" aria-label="Composiciones de Recepción">
+            <thead>
+              <tr class="header-row" id="listHead"></tr>
+              <tr class="filter-row" id="listFilterRow"></tr>
+            </thead>
+            <tbody id="listBody"></tbody>
+          </table>
+        </div>
+        <nav class="table-paginator" id="listPaginator" aria-label="Paginación">
+          <div class="table-paginator__cluster">
+            <button type="button" class="table-pag-btn" id="pagFirst" aria-label="Primera página"><i class="pi pi-angle-double-left"></i></button>
+            <button type="button" class="table-pag-btn" id="pagPrev"  aria-label="Página anterior"><i class="pi pi-angle-left"></i></button>
+            <div class="table-paginator__pages" id="pagPages"></div>
+            <button type="button" class="table-pag-btn" id="pagNext"  aria-label="Página siguiente"><i class="pi pi-angle-right"></i></button>
+            <button type="button" class="table-pag-btn" id="pagLast"  aria-label="Última página"><i class="pi pi-angle-double-right"></i></button>
+            <select id="pageSizeSelect" class="table-paginator__select" aria-label="Registros por página">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="25">25</option>
+            </select>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+  </main>
+  <footer class="page-footer">3.35.134 ©Netlogistik 2026</footer>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║           MODAL — ASIGNACIÓN DE ETIQUETAS           ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div id="assignModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="assignModalTitle">
+  <div class="modal-card">
+
+    <div class="modal-card__head">
+        <div class="modal-card__title" id="assignModalTitle">
+        Asignación de Etiquetas<span id="assignModalSubtitle"></span>
+      </div>
+    </div>
+
+    <div class="modal-card__body">
+
+      <!-- Selector de caja -->
+      <div class="modal-controls-row">
+        <div class="ctrl-field">
+          <label class="field-label" for="boxSelect">Caja de etiquetas <span style="color:#dc2626">*</span></label>
+          <select id="boxSelect" class="form-select" aria-label="Selecciona la caja de etiquetas">
+            <option value="">Selecciona una caja</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Info / warning banner -->
+      <div id="boxInfoBanner" class="info-callout hidden" role="status">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        <span id="boxInfoText"></span>
+      </div>
+
+      <!-- Tabla de tarimas y bultos -->
+      <div class="data-table-scroll-pane">
+        <table class="asgn-table" id="asgnTable" aria-label="Tarimas y bultos">
+          <thead>
+            <tr>
+              <th style="width:180px">N° Tarima</th>
+              <th style="width:160px">N° Bulto</th>
+              <th>Etiqueta asignada</th>
+            </tr>
+          </thead>
+          <tbody id="asgnTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Paginador modal -->
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem;">
+        <span class="grid-summary" id="asgnSummary"></span>
+        <nav class="table-paginator" id="asgnPaginator" aria-label="Paginación de asignaciones">
+          <div class="table-paginator__cluster">
+            <button type="button" class="table-pag-btn" id="asgnPagFirst" aria-label="Primera página"><i class="pi pi-angle-double-left"></i></button>
+            <button type="button" class="table-pag-btn" id="asgnPagPrev" aria-label="Página anterior"><i class="pi pi-angle-left"></i></button>
+            <div class="table-paginator__pages" id="asgnPagPages"></div>
+            <button type="button" class="table-pag-btn" id="asgnPagNext" aria-label="Página siguiente"><i class="pi pi-angle-right"></i></button>
+            <button type="button" class="table-pag-btn" id="asgnPagLast" aria-label="Última página"><i class="pi pi-angle-double-right"></i></button>
+            <select id="asgnPageSizeSelect" class="table-paginator__select" aria-label="Registros por página">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+            </select>
+          </div>
+        </nav>
+      </div>
+
+    </div>
+
+    <div class="modal-card__actions">
+      <button type="button" class="btn btn-secondary" id="assignCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="assignSaveBtn" disabled>
+        <i class="pi pi-save" aria-hidden="true"></i>
+        Guardar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast" class="p-toast" role="region" aria-live="polite" aria-label="Notificaciones"></div>
+
+<!-- Tooltip -->
+<div class="app-tooltip" id="appTooltip" role="tooltip"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'ops826CRAssignments';
+
+  // ── MENSAJES ──────────────────────────────────────────────
+  var MSG = {
+    MSG049: 'Asignación de etiquetas completada correctamente.',
+    MSG050: 'La caja seleccionada no tiene etiquetas suficientes para este CR.',
+    MSG051: 'La etiqueta ya está asignada a otro elemento.',
+    MSG052: 'Operación cancelada. No se realizaron cambios.'
+  };
+
+  // ── DATOS — CAJAS ─────────────────────────────────────────
+  var BOXES = [
+    { id: 'CAJA-001', nombre: 'Caja Andén 1',            inicio: 1000,  fin: 1999,  usadasHasta: 1249 },
+    { id: 'CAJA-002', nombre: 'Caja Andén 2',            inicio: 2000,  fin: 2499,  usadasHasta: null },
+    { id: 'CAJA-003', nombre: 'Caja Pasillo A',           inicio: 2500,  fin: 3000,  usadasHasta: 2599 },
+    { id: 'CAJA-004', nombre: 'Caja Pasillo B',           inicio: 3001,  fin: 3500,  usadasHasta: null },
+    { id: 'CAJA-005', nombre: 'Caja Recibo Norte',        inicio: 4000,  fin: 4999,  usadasHasta: 4099 },
+    { id: 'CAJA-006', nombre: 'Caja Recibo Sur',          inicio: 5000,  fin: 5499,  usadasHasta: null },
+    { id: 'CAJA-007', nombre: 'Caja Embarque 1',          inicio: 6000,  fin: 6999,  usadasHasta: 6499 },
+    { id: 'CAJA-008', nombre: 'Caja Embarque 2',          inicio: 7000,  fin: 7250,  usadasHasta: null },
+    { id: 'CAJA-009', nombre: 'Caja Devoluciones',        inicio: 8000,  fin: 8500,  usadasHasta: null },
+    { id: 'CAJA-010', nombre: 'Caja Inventario Cíclico',  inicio: 9000,  fin: 9999,  usadasHasta: 9099 },
+    { id: 'CAJA-011', nombre: 'Caja Armado Especial',     inicio: 10000, fin: 10500, usadasHasta: null },
+    { id: 'CAJA-012', nombre: 'Caja Ola Nocturna',        inicio: 11000, fin: 11999, usadasHasta: 11999 }
+  ];
+
+  function boxDisponibles(box) {
+    var total = box.fin - box.inicio + 1;
+    var usadas = box.usadasHasta != null
+      ? Math.max(0, Math.min(box.usadasHasta, box.fin) - box.inicio + 1)
+      : 0;
+    return total - usadas;
+  }
+
+  function nextAvailableLabel(box) {
+    return box.usadasHasta != null ? box.usadasHasta + 1 : box.inicio;
+  }
+
+  // ── DATOS — CRs ───────────────────────────────────────────
+  // tarimas sin bultos necesitan etiqueta propia
+  // tarimas con bultos: solo lectura (no requieren etiqueta propia, HU sección final)
+  var CRS = [
+    {
+      id: 528657, nombre: 'AUTOALLCAL', version: 2, estado: 'procesada',
+      updatedBy: 'admin.wms',
+      updatedAt: new Date(2026, 5, 24, 14, 41, 18).toISOString(),
+      createdAt: new Date(2026, 5, 24, 14, 41, 18).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }, { numero: 102, etiqueta: null }, { numero: 103, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [{ numero: 201, etiqueta: null }, { numero: 202, etiqueta: null }] },
+        { numero: 3, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 526693, nombre: '137711', version: 1, estado: 'procesada',
+      updatedBy: 'jperez',
+      updatedAt: new Date(2026, 3, 13, 15, 30, 10).toISOString(),
+      createdAt: new Date(2026, 3, 13, 15, 30, 10).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: 2000, bultos: [{ numero: 101, etiqueta: 2001 }, { numero: 102, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 526565, nombre: 'TESTCALAH', version: 1, estado: 'procesada',
+      updatedBy: 'mlopez',
+      updatedAt: new Date(2026, 2, 18, 10, 0, 11).toISOString(),
+      createdAt: new Date(2026, 2, 18, 10, 0, 11).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }, { numero: 102, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [{ numero: 201, etiqueta: null }] },
+        { numero: 3, etiqueta: null, bultos: [] },
+        { numero: 4, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 526449, nombre: 'TESTCALREST', version: 1, estado: 'procesada',
+      updatedBy: 'rgarcia',
+      updatedAt: new Date(2026, 1, 18, 12, 45, 16).toISOString(),
+      createdAt: new Date(2026, 1, 18, 12, 45, 16).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 524851, nombre: 'YA0711', version: 1, estado: 'procesada',
+      updatedBy: 'acastillo',
+      updatedAt: new Date(2025, 10, 7, 14, 30, 17).toISOString(),
+      createdAt: new Date(2025, 10, 7, 14, 30, 17).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }, { numero: 102, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [{ numero: 201, etiqueta: null }] }
+      ]
+    },
+    {
+      id: 166221, nombre: '132340', version: 1, estado: 'procesada',
+      updatedBy: 'jperez',
+      updatedAt: new Date(2025, 5, 19, 8, 15, 15).toISOString(),
+      createdAt: new Date(2025, 5, 19, 8, 15, 15).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 166220, nombre: '132341', version: 1, estado: 'procesada',
+      updatedBy: 'mlopez',
+      updatedAt: new Date(2025, 5, 19, 8, 15, 15).toISOString(),
+      createdAt: new Date(2025, 5, 19, 8, 15, 15).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }, { numero: 102, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 166178, nombre: '132352', version: 1, estado: 'procesada',
+      updatedBy: 'admin.wms',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] }
+      ]
+    },
+    {
+      id: 166176, nombre: '132344', version: 1, estado: 'procesada',
+      updatedBy: 'rgarcia',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 166175, nombre: '132347', version: 1, estado: 'en-progreso',
+      updatedBy: 'acastillo',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] }
+      ]
+    },
+    {
+      id: 166174, nombre: '132350', version: 1, estado: 'en-progreso',
+      updatedBy: 'jperez',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 166173, nombre: '132351', version: 1, estado: 'procesada',
+      updatedBy: 'mlopez',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] },
+        { numero: 2, etiqueta: null, bultos: [] }
+      ]
+    },
+    {
+      id: 166172, nombre: '132342', version: 1, estado: 'procesada',
+      updatedBy: 'rgarcia',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: null }] }
+      ]
+    },
+    {
+      id: 166171, nombre: '132349', version: 1, estado: 'procesada',
+      updatedBy: 'admin.wms',
+      updatedAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      createdAt: new Date(2025, 5, 18, 17, 45, 14).toISOString(),
+      tarimas: [
+        { numero: 1, etiqueta: null, bultos: [] }
+      ]
+    }
+  ];
+
+  // ── ESTADO GLOBAL ─────────────────────────────────────────
+  var listState = {
+    filters: { id: '', nombre: '', version: '', estado: '', updatedBy: '', updatedAt: '', createdAt: '' },
+    page: 1,
+    pageSize: 10,
+    sortKey: 'createdAt',
+    sortDir: 'desc'
+  };
+
+  var COLUMNS = [
+    { key: 'id',        label: 'ID',             visible: true,  sortable: true },
+    { key: 'nombre',    label: 'Nombre',          visible: true,  sortable: true },
+    { key: 'version',   label: 'Versión',         visible: true,  sortable: true },
+    { key: 'estado',    label: 'Estado',          visible: true,  sortable: true },
+    { key: 'reprocesar',label: 'Reprocesar',      visible: true,  sortable: false },
+    { key: 'updatedBy', label: 'Actualizado por', visible: true,  sortable: true },
+    { key: 'updatedAt', label: 'Actualizado',     visible: true,  sortable: true },
+    { key: 'createdAt', label: 'Creado',          visible: true,  sortable: true }
+  ];
+
+  var modalState = {
+    cr: null,
+    box: null,
+    tempEtq: {},  // key → etiqueta number
+    editingKey: null
+  };
+
+  // Estado de paginación del modal (independiente del listado principal)
+  var asgnPagState = { page: 1, pageSize: 10 };
+
+  // ── UTILIDADES ────────────────────────────────────────────
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('es-MX', {
+      day: 'numeric', month: 'long', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      timeZoneName: 'short'
+    });
+  }
+
+  function showToast(msg, severity) {
+    var icons = { success: 'pi-check', error: 'pi-times-circle', warn: 'pi-exclamation-triangle', info: 'pi-info-circle' };
+    var c = document.getElementById('toast');
+    var el = document.createElement('div');
+    el.className = 'p-toast-message p-toast-message-' + (severity || 'success');
+    el.setAttribute('role', 'alert');
+    el.innerHTML =
+      '<div class="p-toast-message-content">' +
+        '<span class="p-toast-message-icon pi ' + (icons[severity] || 'pi-check') + '"></span>' +
+        '<div class="p-toast-message-text"><span class="p-toast-message-detail">' + esc(msg) + '</span></div>' +
+        '<button type="button" class="p-toast-icon-close" aria-label="Cerrar"><span class="pi pi-times"></span></button>' +
+      '</div>';
+    c.appendChild(el);
+    var rm = function () { if (el.parentNode) el.parentNode.removeChild(el); };
+    el.querySelector('.p-toast-icon-close').addEventListener('click', rm);
+    setTimeout(rm, 4000);
+  }
+
+  // ── CONTAR etiquetas necesarias ───────────────────────────
+  function countNeeded(cr) {
+    var total = 0, assigned = 0;
+    cr.tarimas.forEach(function (t) {
+      var tKey = 'T' + cr.id + '_' + t.numero;
+      if (t.bultos.length === 0) {
+        // Tarima sin bultos: la etiqueta va a la tarima
+        total++;
+        if (t.etiqueta != null || modalState.tempEtq[tKey] != null) assigned++;
+      } else {
+        // Tarima con bultos: la etiqueta va a cada bulto (la tarima no lleva etiqueta)
+        t.bultos.forEach(function (b) {
+          var bKey = 'B' + cr.id + '_' + t.numero + '_' + b.numero;
+          total++;
+          if (b.etiqueta != null || modalState.tempEtq[bKey] != null) assigned++;
+        });
+      }
+    });
+    return { total: total, assigned: assigned };
+  }
+
+  function isInCatalog(num) {
+    return BOXES.some(function (b) { return num >= b.inicio && num <= b.fin; });
+  }
+
+  // ── LISTADO ───────────────────────────────────────────────
+  function getFiltered() {
+    return CRS.filter(function (cr) {
+      var f = listState.filters;
+      if (f.id && String(cr.id).indexOf(f.id) === -1) return false;
+      if (f.nombre && cr.nombre.toLowerCase().indexOf(f.nombre.toLowerCase()) === -1) return false;
+      if (f.version && String(cr.version).indexOf(f.version) === -1) return false;
+      if (f.estado && f.estado !== 'todo') {
+        if (f.estado === 'procesada' && cr.estado !== 'procesada') return false;
+        if (f.estado === 'en-progreso' && cr.estado !== 'en-progreso') return false;
+      }
+      if (f.updatedBy && (!cr.updatedBy || cr.updatedBy.toLowerCase().indexOf(f.updatedBy.toLowerCase()) === -1)) return false;
+      if (f.updatedAt && fmtDate(cr.updatedAt).toLowerCase().indexOf(f.updatedAt.toLowerCase()) === -1) return false;
+      if (f.createdAt && fmtDate(cr.createdAt).toLowerCase().indexOf(f.createdAt.toLowerCase()) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      var k = listState.sortKey;
+      var mul = listState.sortDir === 'asc' ? 1 : -1;
+      if (!k) return 0;
+      if (k === 'updatedAt' || k === 'createdAt') return (new Date(a[k]) - new Date(b[k])) * mul;
+      if (k === 'id' || k === 'version') return (Number(a[k]) - Number(b[k])) * mul;
+      return String(a[k] || '').localeCompare(String(b[k] || ''), 'es') * mul;
+    });
+  }
+
+  function buildColChooser() {
+    var items = document.getElementById('colChooserItems');
+    items.innerHTML = '';
+    COLUMNS.forEach(function (col, i) {
+      var lbl = document.createElement('label');
+      lbl.className = 'col-chooser-item';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = col.visible;
+      cb.dataset.colIdx = i;
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(col.label));
+      items.appendChild(lbl);
+    });
+  }
+
+  function renderListHead() {
+    var head = document.getElementById('listHead');
+    var filterRow = document.getElementById('listFilterRow');
+    head.innerHTML = '';
+    filterRow.innerHTML = '';
+
+    COLUMNS.forEach(function (col) {
+      var th = document.createElement('th');
+      if (!col.visible) { th.className = 'col-hidden'; head.appendChild(th); return; }
+      if (!col.sortable) th.className = 'col-no-sort';
+      var sortIco = '';
+      if (listState.sortKey === col.key) {
+        sortIco = ' <i class="pi ' + (listState.sortDir === 'asc' ? 'pi-sort-amount-up-alt' : 'pi-sort-amount-down') + ' sort-icon"></i>';
+      }
+      th.innerHTML = esc(col.label) + sortIco;
+      if (col.sortable) {
+        th.addEventListener('click', (function (k) {
+          return function () {
+            if (listState.sortKey === k) listState.sortDir = listState.sortDir === 'asc' ? 'desc' : 'asc';
+            else { listState.sortKey = k; listState.sortDir = 'asc'; }
+            listState.page = 1;
+            renderList();
+          };
+        })(col.key));
+      }
+      head.appendChild(th);
+
+      // filter cell
+      var ftd = document.createElement('th');
+      if (!col.visible) { ftd.className = 'col-hidden'; filterRow.appendChild(ftd); return; }
+      if (col.key === 'estado') {
+        var sel = document.createElement('select');
+        sel.className = 'table-filter-select';
+        sel.setAttribute('aria-label', 'Filtro Estado');
+        ['todo', 'procesada', 'en-progreso'].forEach(function (v) {
+          var o = document.createElement('option');
+          o.value = v;
+          o.textContent = v === 'todo' ? 'Todo' : v === 'procesada' ? 'Procesada' : 'Procesando';
+          if (listState.filters.estado === v) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', function () { listState.filters.estado = this.value; listState.page = 1; renderList(); });
+        ftd.appendChild(sel);
+      } else if (col.key === 'reprocesar') {
+        // no filter for reprocesar
+      } else {
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'table-filter-input';
+        inp.value = listState.filters[col.key] || '';
+        inp.setAttribute('aria-label', 'Filtro ' + col.label);
+        inp.addEventListener('input', (function (k) {
+          return function () { listState.filters[k] = this.value; listState.page = 1; renderList(); };
+        })(col.key));
+        ftd.appendChild(inp);
+      }
+      filterRow.appendChild(ftd);
+    });
+
+    var actTh = document.createElement('th');
+    actTh.className = 'col-no-sort col-center';
+    actTh.textContent = '';
+    actTh.style.width = '54px';
+    head.appendChild(actTh);
+    filterRow.appendChild(document.createElement('th'));
+  }
+
+  function renderListBody(rows) {
+    var tbody = document.getElementById('listBody');
+    var summary = document.getElementById('listSummary');
+    var totalPages = Math.max(1, Math.ceil(rows.length / listState.pageSize));
+    if (listState.page > totalPages) listState.page = totalPages;
+    var start = (listState.page - 1) * listState.pageSize;
+    var page = rows.slice(start, start + listState.pageSize);
+
+    var dispStart = rows.length ? start + 1 : 0;
+    var dispEnd = Math.min(start + listState.pageSize, rows.length);
+    summary.innerHTML = 'Mostrando <strong>' + dispStart + '-' + dispEnd + '</strong> de <strong>' + rows.length + '</strong> elementos.';
+
+    tbody.innerHTML = '';
+    if (!page.length) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.colSpan = COLUMNS.filter(function (c) { return c.visible; }).length + 1;
+      td.textContent = 'No se encontraron resultados.';
+      td.style.cssText = 'text-align:center; padding:2rem; color:var(--text-color-secondary);';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    page.forEach(function (cr) {
+      var tr = document.createElement('tr');
+      var cells = '';
+
+      COLUMNS.forEach(function (col) {
+        if (!col.visible) { cells += '<td class="col-hidden"></td>'; return; }
+        switch (col.key) {
+          case 'id':
+            cells += '<td>' + esc(cr.id) + '</td>';
+            break;
+          case 'nombre':
+            cells += '<td><a href="#" class="td-link" tabindex="0">' + esc(cr.nombre) + '</a></td>';
+            break;
+          case 'version':
+            cells += '<td class="col-center">' + esc(cr.version) + '</td>';
+            break;
+          case 'estado':
+            if (cr.estado === 'procesada') {
+              cells += '<td class="col-center"><i class="pi pi-check status-check" aria-label="Procesada" title="Procesada"></i></td>';
+            } else {
+              cells += '<td class="col-center"><span style="color:var(--text-color-secondary); font-size:0.8rem;">Procesando</span></td>';
+            }
+            break;
+          case 'reprocesar':
+            cells += '<td class="col-center"><i class="pi pi-refresh status-reprocesar" title="Reprocesar" aria-label="Reprocesar"></i></td>';
+            break;
+          case 'updatedBy':
+            cells += '<td>' + esc(cr.updatedBy || '—') + '</td>';
+            break;
+          case 'updatedAt':
+            cells += '<td>' + esc(fmtDate(cr.updatedAt)) + '</td>';
+            break;
+          case 'createdAt':
+            cells += '<td>' + esc(fmtDate(cr.createdAt)) + '</td>';
+            break;
+        }
+      });
+
+      var isProcessada = cr.estado === 'procesada';
+      cells +=
+        '<td class="col-center" style="position:relative">' +
+          '<div style="display:inline-flex; align-items:center; gap:0.4rem;">' +
+            '<button type="button" class="btn-action-plus" aria-label="Acciones" data-cr-id="' + cr.id + '">' +
+              '+' +
+            '</button>' +
+            '<button type="button" class="btn-assign-etq' + (isProcessada ? '' : ' is-disabled') + '"' +
+              ' data-cr-id="' + cr.id + '" data-action="etiquetas"' +
+              (isProcessada ? '' : ' aria-disabled="true"') +
+              ' title="Asignación de etiquetas" aria-label="Asignación de etiquetas"' +
+              ' data-tooltip="' + (isProcessada ? 'Asignación de etiquetas' : 'Solo disponible en CRs procesadas') + '">' +
+              '<i class="pi pi-tag" aria-hidden="true"></i>' +
+            '</button>' +
+          '</div>' +
+        '</td>';
+
+      tr.innerHTML = cells;
+      tbody.appendChild(tr);
+    });
+
+    // Botón directo de asignación de etiquetas
+    tbody.querySelectorAll('.btn-assign-etq:not(.is-disabled)').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var crId = Number(btn.getAttribute('data-cr-id'));
+        openAssignModal(crId);
+      });
+    });
+
+    renderPagination(totalPages);
+  }
+
+  function closeAllMenus() {
+    document.querySelectorAll('.action-menu-panel').forEach(function (p) { p.classList.add('hidden'); });
+    document.querySelectorAll('.btn-action-plus').forEach(function (b) { b.removeAttribute('aria-expanded'); });
+  }
+  function renderPagination(totalPages) {
+    var container = document.getElementById('pagPages');
+    container.innerHTML = '';
+    var maxBtns = 7;
+    var half = Math.floor(maxBtns / 2);
+    var startP = Math.max(1, listState.page - half);
+    var endP = Math.min(totalPages, startP + maxBtns - 1);
+    if (endP - startP + 1 < maxBtns) startP = Math.max(1, endP - maxBtns + 1);
+    for (var i = startP; i <= endP; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'table-pag-btn' + (i === listState.page ? ' is-active' : '');
+      btn.textContent = i;
+      btn.addEventListener('click', (function (p) { return function () { listState.page = p; renderList(); }; })(i));
+      container.appendChild(btn);
+    }
+    var p1 = document.getElementById('pagFirst');
+    var pp = document.getElementById('pagPrev');
+    var pn = document.getElementById('pagNext');
+    var pl = document.getElementById('pagLast');
+    p1.disabled = listState.page <= 1;
+    pp.disabled = listState.page <= 1;
+    pn.disabled = listState.page >= totalPages;
+    pl.disabled = listState.page >= totalPages;
+    var pagNav = document.getElementById('listPaginator');
+    if (pagNav) pagNav.style.display = totalPages <= 1 ? 'none' : '';
+  }
+
+  function renderList() {
+    renderListHead();
+    renderListBody(getFiltered());
+  }
+
+  // ── MODAL ASIGNACIÓN ──────────────────────────────────────
+  function openAssignModal(crId) {
+    var cr = CRS.find(function (c) { return c.id === crId; });
+    if (!cr) return;
+
+    modalState.cr = cr;
+    modalState.box = null;
+    modalState.tempEtq = {};
+    modalState.editingKey = null;
+    asgnPagState.page = 1;
+
+    document.getElementById('assignModalSubtitle').textContent = ' ' + cr.id + ' ' + cr.nombre;
+
+    // Populate dropdown
+    var sel = document.getElementById('boxSelect');
+    sel.innerHTML = '<option value="">Selecciona una caja</option>';
+    BOXES.forEach(function (box) {
+      var disp = boxDisponibles(box);
+      var o = document.createElement('option');
+      o.value = box.id;
+      o.textContent = box.nombre + ' (' + disp + ' disponibles)';
+      if (disp === 0) { o.disabled = true; o.textContent += ' — Sin disponibles'; }
+      sel.appendChild(o);
+    });
+    sel.value = '';
+
+    hideBanner();
+    document.getElementById('assignSaveBtn').disabled = true;
+    document.getElementById('asgnTableBody').innerHTML = '';
+
+    // Render table with existing etiquetas (empty state initially)
+    renderAssignTable();
+
+    document.getElementById('assignModal').classList.remove('hidden');
+    document.getElementById('boxSelect').focus();
+  }
+
+  function closeAssignModal() {
+    document.getElementById('assignModal').classList.add('hidden');
+    modalState.cr = null;
+    modalState.box = null;
+    modalState.tempEtq = {};
+  }
+
+  function hideBanner() {
+    document.getElementById('boxInfoBanner').classList.add('hidden');
+  }
+
+  function showBanner(text, isWarning) {
+    var banner = document.getElementById('boxInfoBanner');
+    banner.className = 'info-callout' + (isWarning ? ' warning' : '');
+    banner.querySelector('.pi').className = 'pi ' + (isWarning ? 'pi-exclamation-triangle' : 'pi-info-circle');
+    document.getElementById('boxInfoText').textContent = text;
+    banner.classList.remove('hidden');
+  }
+
+  // Retrieve etiqueta for a key (temp first, then original)
+  function getEtiqueta(key, originalVal) {
+    if (modalState.tempEtq.hasOwnProperty(key)) return modalState.tempEtq[key];
+    return originalVal;
+  }
+
+  function renderAssignTable() {
+    var cr = modalState.cr;
+    if (!cr) return;
+
+    // Construir filas de dos niveles:
+    // - Tarima con bultos: fila cabecera (sin etiqueta) + filas hijas por bulto
+    // - Tarima sin bultos: fila única con etiqueta asignada a la tarima
+    var allRows = [];
+    cr.tarimas.forEach(function (t) {
+      var tKey = 'T' + cr.id + '_' + t.numero;
+      if (t.bultos.length > 0) {
+        allRows.push({ type: 'header', t: t, tKey: tKey });
+        t.bultos.forEach(function (b) {
+          var bKey = 'B' + cr.id + '_' + t.numero + '_' + b.numero;
+          allRows.push({ type: 'bulto', t: t, b: b, bKey: bKey, etqBulto: getEtiqueta(bKey, b.etiqueta) });
+        });
+      } else {
+        allRows.push({ type: 'tarima', t: t, tKey: tKey, etqTarima: getEtiqueta(tKey, t.etiqueta) });
+      }
+    });
+
+    var total = allRows.length;
+    var pageSize = asgnPagState.pageSize;
+    var totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (asgnPagState.page > totalPages) asgnPagState.page = totalPages;
+    var start = (asgnPagState.page - 1) * pageSize;
+    var pageRows = allRows.slice(start, start + pageSize);
+
+    // Renderizar filas de la página actual
+    var tbody = document.getElementById('asgnTableBody');
+    tbody.innerHTML = '';
+    pageRows.forEach(function (o) {
+      var tr = document.createElement('tr');
+      if (o.type === 'header') {
+        tr.className = 'tarima-header-row';
+        tr.innerHTML = buildTarimaHeaderRow(o);
+      } else if (o.type === 'bulto') {
+        tr.className = 'bulto-child-row';
+        tr.innerHTML = buildBultoChildRow(o);
+      } else {
+        tr.className = 'tarima-only-row';
+        tr.innerHTML = buildTarimaOnlyRow(o);
+      }
+      tbody.appendChild(tr);
+    });
+
+    // Resumen
+    var summary = document.getElementById('asgnSummary');
+    if (summary) {
+      var end = Math.min(start + pageSize, total);
+      summary.innerHTML = total > 0
+        ? 'Mostrando <strong>' + (start + 1) + '–' + end + '</strong> de <strong>' + total + '</strong> registros'
+        : 'Sin registros';
+    }
+
+    // Paginador
+    renderAsgnPagination(totalPages);
+
+    // Bind eventos de edición en filas visibles
+    tbody.querySelectorAll('[data-btn-edit]').forEach(function (btn) {
+      btn.addEventListener('click', function () { startEdit(btn.getAttribute('data-btn-edit')); });
+    });
+    tbody.querySelectorAll('[data-btn-confirm]').forEach(function (btn) {
+      btn.addEventListener('click', function () { confirmEdit(btn.getAttribute('data-btn-confirm')); });
+    });
+    tbody.querySelectorAll('[data-btn-cancel-edit]').forEach(function (btn) {
+      btn.addEventListener('click', function () { cancelEdit(btn.getAttribute('data-btn-cancel-edit')); });
+    });
+    tbody.querySelectorAll('[data-edit-input]').forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); confirmEdit(inp.getAttribute('data-edit-input')); }
+        if (e.key === 'Escape') { cancelEdit(inp.getAttribute('data-edit-input')); }
+      });
+    });
+
+    updateSaveBtn();
+  }
+
+  function renderAsgnPagination(totalPages) {
+    var paginator = document.getElementById('asgnPaginator');
+    if (paginator) paginator.style.display = totalPages <= 1 ? 'none' : '';
+
+    var first = document.getElementById('asgnPagFirst');
+    var prev  = document.getElementById('asgnPagPrev');
+    var next  = document.getElementById('asgnPagNext');
+    var last  = document.getElementById('asgnPagLast');
+    if (first) first.disabled = asgnPagState.page <= 1;
+    if (prev)  prev.disabled  = asgnPagState.page <= 1;
+    if (next)  next.disabled  = asgnPagState.page >= totalPages;
+    if (last)  last.disabled  = asgnPagState.page >= totalPages;
+
+    var pages = document.getElementById('asgnPagPages');
+    if (!pages) return;
+    pages.innerHTML = '';
+    for (var i = 1; i <= totalPages; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'table-pag-btn' + (i === asgnPagState.page ? ' is-active' : '');
+      btn.textContent = i;
+      btn.addEventListener('click', (function (p) {
+        return function () { asgnPagState.page = p; renderAssignTable(); };
+      })(i));
+      pages.appendChild(btn);
+    }
+  }
+
+  /* ---- Constructores de filas de dos niveles ---- */
+
+  function buildTarimaHeaderRow(o) {
+    return '<td colspan="3" class="tarima-group-cell"><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>';
+  }
+
+  function buildBultoChildRow(o) {
+    var etqHtml = buildEditableCell(o.bKey, o.etqBulto);
+    return '<td class="bulto-indent-col"></td>' +
+           '<td>Bulto ' + esc(o.b.numero) + '</td>' +
+           '<td class="cell-editable">' + etqHtml + '</td>';
+  }
+
+  function buildTarimaOnlyRow(o) {
+    var etqHtml = buildEditableCell(o.tKey, o.etqTarima);
+    return '<td><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>' +
+           '<td><span style="color:#94a3b8;font-size:.8rem;">Sin bultos</span></td>' +
+           '<td class="cell-editable">' + etqHtml + '</td>';
+  }
+
+  // key: identificador único por celda; mismo para DOM y tempEtq (sin duplicados en diseño de 2 niveles)
+  function buildEditableCell(key, currentVal) {
+    var valClass = currentVal != null ? 'etq-assigned' : 'etq-empty';
+    var valText  = currentVal != null ? esc(currentVal) : 'Sin asignar';
+    var inputVal = currentVal != null ? esc(currentVal) : '';
+
+    var dispHtml =
+      '<span id="disp-' + esc(key) + '" class="etq-cell-disp">' +
+        '<span class="etq-value ' + valClass + '">' + valText + '</span>' +
+        '<button class="edit-inline-btn" data-btn-edit="' + esc(key) + '" title="Editar etiqueta" aria-label="Editar etiqueta"><i class="pi pi-pencil"></i></button>' +
+      '</span>';
+
+    var formHtml =
+      '<span id="edit-form-' + esc(key) + '" class="hidden inline-edit-wrap">' +
+        '<input class="inline-edit-input" id="inp-' + esc(key) + '" type="text" inputmode="numeric" value="' + inputVal + '" maxlength="12"' +
+          ' data-edit-input="' + esc(key) + '" aria-label="Número de etiqueta">' +
+        '<button class="inline-edit-confirm" data-btn-confirm="' + esc(key) + '" title="Confirmar" aria-label="Confirmar"><i class="pi pi-check"></i></button>' +
+        '<button class="inline-edit-cancel" data-btn-cancel-edit="' + esc(key) + '" title="Cancelar edición" aria-label="Cancelar edición"><i class="pi pi-times"></i></button>' +
+      '</span>';
+
+    return dispHtml + formHtml;
+  }
+
+  function startEdit(key) {
+    document.querySelectorAll('.inline-edit-wrap:not(.hidden)').forEach(function (w) {
+      w.classList.add('hidden');
+      var dispKey = w.id.replace('edit-form-', '');
+      var disp = document.getElementById('disp-' + dispKey);
+      if (disp) disp.classList.remove('hidden');
+    });
+    var disp = document.getElementById('disp-' + key);
+    var form = document.getElementById('edit-form-' + key);
+    if (!disp || !form) return;
+    disp.classList.add('hidden');
+    form.classList.remove('hidden');
+    var inp = document.getElementById('inp-' + key);
+    if (inp) {
+      inp.value = modalState.tempEtq[key] != null ? modalState.tempEtq[key] : '';
+      inp.focus(); inp.select();
+    }
+    modalState.editingKey = key;
+  }
+
+  function confirmEdit(key) {
+    var inp = document.getElementById('inp-' + key);
+    if (!inp) return;
+    var raw = inp.value.trim();
+    if (!raw) {
+      delete modalState.tempEtq[key];
+      inp.classList.remove('invalid');
+      modalState.editingKey = null;
+      renderAssignTable();
+      return;
+    }
+    var num = parseInt(raw, 10);
+    if (isNaN(num) || num <= 0) {
+      inp.classList.add('invalid');
+      showToast('Ingresa un número de etiqueta válido.', 'error');
+      return;
+    }
+    // Validar que la etiqueta pertenezca a alguna caja del catálogo registrado
+    if (!isInCatalog(num)) {
+      inp.classList.add('invalid');
+      showToast('La etiqueta no pertenece a ninguna caja registrada en el catálogo.', 'error');
+      return;
+    }
+    // Verificar duplicados
+    for (var k in modalState.tempEtq) {
+      if (k !== key && modalState.tempEtq[k] === num) {
+        inp.classList.add('invalid');
+        showToast(MSG.MSG051, 'error');
+        return;
+      }
+    }
+    inp.classList.remove('invalid');
+    modalState.tempEtq[key] = num;
+    modalState.editingKey = null;
+    renderAssignTable();
+  }
+
+  function cancelEdit(key) {
+    var disp = document.getElementById('disp-' + key);
+    var form = document.getElementById('edit-form-' + key);
+    if (disp) disp.classList.remove('hidden');
+    if (form) form.classList.add('hidden');
+    var inp = document.getElementById('inp-' + key);
+    if (inp) inp.classList.remove('invalid');
+    modalState.editingKey = null;
+  }
+
+  function updateSaveBtn() {
+    var cr = modalState.cr;
+    if (!cr) return;
+    var counts = countNeeded(cr);
+    document.getElementById('assignSaveBtn').disabled = counts.assigned < counts.total;
+  }
+
+  // ── AUTO ASSIGN ───────────────────────────────────────────
+  function autoAssign() {
+    var cr = modalState.cr;
+    var box = modalState.box;
+    if (!cr || !box) return;
+
+    var disp = boxDisponibles(box);
+    var counts = countNeeded(cr);
+    var needed = counts.total - counts.assigned;
+
+    if (needed > disp) {
+      showBanner(MSG.MSG050 + ' Se necesitan ' + needed + ' etiquetas, disponibles ' + disp + '. Selecciona otra caja para completar.', true);
+    } else {
+      showBanner('"' + box.nombre + '" ' + disp + ' etiquetas disponibles. Rango: ' + box.inicio + ' a ' + box.fin + '.', false);
+    }
+
+    var next = nextAvailableLabel(box);
+    // Already-used in tempEtq
+    var usedSet = {};
+    for (var k in modalState.tempEtq) { usedSet[modalState.tempEtq[k]] = true; }
+
+    function assignNext() {
+      while (usedSet[next]) next++;
+      if (next > box.fin) return false;
+      usedSet[next] = true;
+      return next++;
+    }
+
+    // 1. Tarimas sin bultos: asignar etiqueta a la tarima
+    cr.tarimas.forEach(function (t) {
+      if (t.bultos.length > 0) return;
+      var k = 'T' + cr.id + '_' + t.numero;
+      if (getEtiqueta(k, t.etiqueta) == null) {
+        var n = assignNext();
+        if (n !== false) modalState.tempEtq[k] = n;
+      }
+    });
+    // 2. Tarimas con bultos: asignar etiqueta a cada bulto (la tarima no lleva etiqueta)
+    cr.tarimas.forEach(function (t) {
+      t.bultos.forEach(function (b) {
+        var k = 'B' + cr.id + '_' + t.numero + '_' + b.numero;
+        if (getEtiqueta(k, b.etiqueta) == null) {
+          var n = assignNext();
+          if (n !== false) modalState.tempEtq[k] = n;
+        }
+      });
+    });
+
+    renderAssignTable();
+  }
+
+  // ── SAVE ──────────────────────────────────────────────────
+  function saveAssignments() {
+    var cr = modalState.cr;
+    if (!cr) return;
+
+    cr.tarimas.forEach(function (t) {
+      if (t.bultos.length === 0) {
+        // Tarima sin bultos: guardar etiqueta en la tarima
+        var tKey = 'T' + cr.id + '_' + t.numero;
+        if (modalState.tempEtq.hasOwnProperty(tKey)) t.etiqueta = modalState.tempEtq[tKey];
+      } else {
+        // Tarima con bultos: guardar etiqueta en cada bulto (la tarima no lleva etiqueta propia)
+        t.etiqueta = null;
+        t.bultos.forEach(function (b) {
+          var bKey = 'B' + cr.id + '_' + t.numero + '_' + b.numero;
+          if (modalState.tempEtq.hasOwnProperty(bKey)) b.etiqueta = modalState.tempEtq[bKey];
+        });
+      }
+    });
+
+    showToast(MSG.MSG049, 'success');
+    closeAssignModal();
+    renderList();
+  }
+
+  // ── COLUMN CHOOSER ────────────────────────────────────────
+  document.getElementById('colChooserBtn').addEventListener('click', function () {
+    var panel = document.getElementById('colChooserPanel');
+    var open = panel.classList.contains('hidden');
+    if (open) { buildColChooser(); panel.classList.remove('hidden'); this.setAttribute('aria-expanded', 'true'); }
+    else { panel.classList.add('hidden'); this.setAttribute('aria-expanded', 'false'); }
+  });
+
+  document.getElementById('colChooserApply').addEventListener('click', function () {
+    var items = document.getElementById('colChooserItems');
+    items.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      COLUMNS[Number(cb.dataset.colIdx)].visible = cb.checked;
+    });
+    document.getElementById('colChooserPanel').classList.add('hidden');
+    document.getElementById('colChooserBtn').setAttribute('aria-expanded', 'false');
+    listState.page = 1;
+    renderList();
+  });
+
+  // ── PAGINATION ────────────────────────────────────────────
+  document.getElementById('pagFirst').addEventListener('click', function () { listState.page = 1; renderList(); });
+  document.getElementById('pagPrev').addEventListener('click', function () { listState.page--; renderList(); });
+  document.getElementById('pagNext').addEventListener('click', function () { listState.page++; renderList(); });
+  document.getElementById('pagLast').addEventListener('click', function () {
+    listState.page = Math.ceil(getFiltered().length / listState.pageSize) || 1;
+    renderList();
+  });
+  document.getElementById('pageSizeSelect').addEventListener('change', function () {
+    listState.pageSize = Number(this.value);
+    listState.page = 1;
+    renderList();
+  });
+
+  // ── MODAL EVENTS ──────────────────────────────────────────
+  document.getElementById('boxSelect').addEventListener('change', function () {
+    var boxId = this.value;
+    if (!boxId) {
+      modalState.box = null;
+      modalState.tempEtq = {};
+      hideBanner();
+      renderAssignTable();
+      return;
+    }
+    var box = BOXES.find(function (b) { return b.id === boxId; });
+    modalState.box = box;
+    // Resetear asignaciones temporales al cambiar de caja y reasignar desde cero
+    modalState.tempEtq = {};
+    asgnPagState.page = 1;
+    // Per HU: "Al seleccionar una caja del listado, se realiza la asignación automática"
+    autoAssign();
+  });
+
+  // Paginador del modal
+  document.getElementById('asgnPagFirst').addEventListener('click', function () {
+    asgnPagState.page = 1; renderAssignTable();
+  });
+  document.getElementById('asgnPagPrev').addEventListener('click', function () {
+    if (asgnPagState.page > 1) { asgnPagState.page--; renderAssignTable(); }
+  });
+  document.getElementById('asgnPagNext').addEventListener('click', function () {
+    asgnPagState.page++; renderAssignTable();
+  });
+  document.getElementById('asgnPagLast').addEventListener('click', function () {
+    // calcular total pages sobre la marcha
+    var cr = modalState.cr;
+    if (!cr) return;
+    var total = 0;
+    cr.tarimas.forEach(function (t) {
+      total += t.bultos.length > 0 ? t.bultos.length : 1;
+    });
+    asgnPagState.page = Math.max(1, Math.ceil(total / asgnPagState.pageSize));
+    renderAssignTable();
+  });
+  document.getElementById('asgnPageSizeSelect').addEventListener('change', function () {
+    asgnPagState.pageSize = Number(this.value);
+    asgnPagState.page = 1;
+    renderAssignTable();
+  });
+
+  document.getElementById('assignCancelBtn').addEventListener('click', function () {
+    closeAssignModal();
+    showToast(MSG.MSG052, 'info');
+  });
+
+  document.getElementById('assignSaveBtn').addEventListener('click', saveAssignments);
+
+  // Close menus on outside click
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.action-menu-wrap')) closeAllMenus();
+    if (!e.target.closest('#colChooserBtn') && !e.target.closest('#colChooserPanel')) {
+      document.getElementById('colChooserPanel').classList.add('hidden');
+      document.getElementById('colChooserBtn').setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // ── TOOLTIP ───────────────────────────────────────────────
+  var tip = document.getElementById('appTooltip');
+  document.addEventListener('mouseover', function (e) {
+    var t = e.target.closest('[data-tooltip]');
+    if (!t) return;
+    tip.textContent = t.getAttribute('data-tooltip');
+    tip.style.display = 'block';
+    var r = t.getBoundingClientRect();
+    var tw = tip.offsetWidth, th = tip.offsetHeight, gap = 8;
+    var placement = 'top', top = r.top - th - gap;
+    if (top < 4) { placement = 'bottom'; top = r.bottom + gap; }
+    var left = Math.max(6, Math.min(r.left + r.width / 2 - tw / 2, document.documentElement.clientWidth - tw - 6));
+    tip.setAttribute('data-placement', placement);
+    tip.style.top = top + 'px';
+    tip.style.left = left + 'px';
+    tip.classList.add('is-visible');
+  });
+  document.addEventListener('mouseout', function (e) {
+    if (e.target.closest('[data-tooltip]')) tip.classList.remove('is-visible');
+  });
+
+  // ── INIT ─────────────────────────────────────────────────
+  renderList();
+
+})();
+</script>
+</body>
+</html>
