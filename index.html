@@ -387,13 +387,18 @@
     .etq-cell-disp { display: inline-flex; align-items: center; gap: 0.4rem; }
     .etq-assigned { font-weight: 600; color: var(--primary-color); }
     .etq-empty { color: #adb5bd; font-style: italic; }
-    .edit-inline-btn {
+    .reassign-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 1.35rem; height: 1.35rem; border-radius: 50%;
       border: none; background: transparent; color: #94a3b8;
       cursor: pointer; font-size: 0.75rem; transition: background .1s, color .1s; flex-shrink: 0;
     }
-    .edit-inline-btn:hover { background: #e2e8f0; color: var(--link-color); }
+    .reassign-btn:hover { background: #e2e8f0; color: var(--link-color); }
+    .reassign-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .reassign-btn:disabled:hover { background: transparent; color: #94a3b8; }
     .etq-blocked {
       display: inline-flex;
       align-items: center;
@@ -402,53 +407,6 @@
       font-size: 0.75rem;
     }
     .etq-blocked .pi { font-size: 0.8rem; }
-
-    /* ── Inline edit ── */
-    /* Formulario de edición inline: posición absoluta para no mover la fila */
-    .inline-edit-wrap {
-      position: absolute;
-      top: 50%; left: 0;
-      transform: translateY(-50%);
-      display: flex; align-items: center; gap: 0.35rem;
-      background: #fff;
-      border: 1px solid var(--primary-color);
-      border-radius: 0.25rem;
-      padding: 0.2rem 0.4rem;
-      box-shadow: 0 2px 8px rgba(15,23,42,0.12);
-      z-index: 10;
-      white-space: nowrap;
-    }
-    .inline-edit-input {
-      width: 88px;
-      height: 1.625rem;
-      padding: 0 0.4rem;
-      border: 1px solid var(--primary-color);
-      border-radius: 0.2rem;
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: var(--text-color);
-    }
-    .inline-edit-input:focus { outline: none; box-shadow: 0 0 0 0.15rem var(--focus-ring); }
-    .inline-edit-input.invalid { border-color: #dc2626; }
-    .inline-edit-confirm {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 1.4rem; height: 1.4rem; border-radius: 50%;
-      background: var(--btn-success); color: #fff; border: none; cursor: pointer; font-size: 0.7rem; flex-shrink: 0;
-    }
-    .inline-edit-cancel {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 1.4rem; height: 1.4rem; border-radius: 50%;
-      background: var(--btn-cancel); color: #fff; border: none; cursor: pointer; font-size: 0.7rem; flex-shrink: 0;
-    }
-    .inline-edit-confirm:hover { background: var(--btn-success-hover); }
-    .inline-edit-cancel:hover { background: var(--btn-cancel-hover); }
-    .edit-action-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 1.6rem; height: 1.6rem; border-radius: 50%;
-      border: none; background: transparent; color: var(--link-color);
-      cursor: pointer; font-size: 0.85rem; transition: background .1s;
-    }
-    .edit-action-btn:hover { background: var(--primary-50); }
 
     /* ── Tarima section header in modal ── */
     .asgn-section-head td {
@@ -655,7 +613,6 @@
   var MSG = {
     MSG049: 'Asignación de etiquetas completada correctamente.',
     MSG050: 'La caja seleccionada no tiene etiquetas suficientes para este CR.',
-    MSG051: 'La etiqueta ya está asignada a otro elemento.',
     MSG052: 'Operación cancelada. No se realizaron cambios.'
   };
 
@@ -854,8 +811,7 @@
   var modalState = {
     cr: null,
     box: null,
-    tempEtq: {},  // key → etiqueta number
-    editingKey: null
+    tempEtq: {}  // key → etiqueta number
   };
 
   // Estado de paginación del modal (independiente del listado principal)
@@ -914,10 +870,6 @@
       }
     });
     return { total: total, assigned: assigned };
-  }
-
-  function isInCatalog(num) {
-    return BOXES.some(function (b) { return num >= b.inicio && num <= b.fin; });
   }
 
   // ── LISTADO ───────────────────────────────────────────────
@@ -1167,7 +1119,6 @@
     modalState.cr = cr;
     modalState.box = null;
     modalState.tempEtq = {};
-    modalState.editingKey = null;
     asgnPagState.page = 1;
 
     document.getElementById('assignModalSubtitle').textContent = ' ' + cr.id + ' ' + cr.nombre;
@@ -1279,21 +1230,9 @@
     // Paginador
     renderAsgnPagination(totalPages);
 
-    // Bind eventos de edición en filas visibles
-    tbody.querySelectorAll('[data-btn-edit]').forEach(function (btn) {
-      btn.addEventListener('click', function () { startEdit(btn.getAttribute('data-btn-edit')); });
-    });
-    tbody.querySelectorAll('[data-btn-confirm]').forEach(function (btn) {
-      btn.addEventListener('click', function () { confirmEdit(btn.getAttribute('data-btn-confirm')); });
-    });
-    tbody.querySelectorAll('[data-btn-cancel-edit]').forEach(function (btn) {
-      btn.addEventListener('click', function () { cancelEdit(btn.getAttribute('data-btn-cancel-edit')); });
-    });
-    tbody.querySelectorAll('[data-edit-input]').forEach(function (inp) {
-      inp.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); confirmEdit(inp.getAttribute('data-edit-input')); }
-        if (e.key === 'Escape') { cancelEdit(inp.getAttribute('data-edit-input')); }
-      });
+    // Bind eventos de reasignación automática en filas visibles
+    tbody.querySelectorAll('[data-btn-reassign]').forEach(function (btn) {
+      btn.addEventListener('click', function () { reassignLabel(btn.getAttribute('data-btn-reassign')); });
     });
 
     updateSaveBtn();
@@ -1351,90 +1290,44 @@
   function buildEditableCell(key, currentVal) {
     var valClass = currentVal != null ? 'etq-assigned' : 'etq-empty';
     var valText  = currentVal != null ? esc(currentVal) : 'Sin asignar';
-    var inputVal = currentVal != null ? esc(currentVal) : '';
+    var hasBox = !!modalState.box;
+    var tip = hasBox
+      ? 'Cambiar a la siguiente etiqueta disponible'
+      : 'Selecciona una caja para cambiar la etiqueta';
 
-    var dispHtml =
-      '<span id="disp-' + esc(key) + '" class="etq-cell-disp">' +
+    return '<span class="etq-cell-disp">' +
         '<span class="etq-value ' + valClass + '">' + valText + '</span>' +
-        '<button class="edit-inline-btn" data-btn-edit="' + esc(key) + '" title="Editar etiqueta" aria-label="Editar etiqueta"><i class="pi pi-pencil"></i></button>' +
+        '<button type="button" class="reassign-btn" data-btn-reassign="' + esc(key) + '"' +
+          (hasBox ? '' : ' disabled') +
+          ' title="' + tip + '" aria-label="' + tip + '">' +
+          '<i class="pi pi-sync"></i>' +
+        '</button>' +
       '</span>';
-
-    var formHtml =
-      '<span id="edit-form-' + esc(key) + '" class="hidden inline-edit-wrap">' +
-        '<input class="inline-edit-input" id="inp-' + esc(key) + '" type="text" inputmode="numeric" value="' + inputVal + '" maxlength="12"' +
-          ' data-edit-input="' + esc(key) + '" aria-label="Número de etiqueta">' +
-        '<button class="inline-edit-confirm" data-btn-confirm="' + esc(key) + '" title="Confirmar" aria-label="Confirmar"><i class="pi pi-check"></i></button>' +
-        '<button class="inline-edit-cancel" data-btn-cancel-edit="' + esc(key) + '" title="Cancelar edición" aria-label="Cancelar edición"><i class="pi pi-times"></i></button>' +
-      '</span>';
-
-    return dispHtml + formHtml;
   }
 
-  function startEdit(key) {
-    document.querySelectorAll('.inline-edit-wrap:not(.hidden)').forEach(function (w) {
-      w.classList.add('hidden');
-      var dispKey = w.id.replace('edit-form-', '');
-      var disp = document.getElementById('disp-' + dispKey);
-      if (disp) disp.classList.remove('hidden');
-    });
-    var disp = document.getElementById('disp-' + key);
-    var form = document.getElementById('edit-form-' + key);
-    if (!disp || !form) return;
-    disp.classList.add('hidden');
-    form.classList.remove('hidden');
-    var inp = document.getElementById('inp-' + key);
-    if (inp) {
-      inp.value = modalState.tempEtq[key] != null ? modalState.tempEtq[key] : '';
-      inp.focus(); inp.select();
+  // Asigna automáticamente la siguiente etiqueta disponible de la caja seleccionada
+  function reassignLabel(key) {
+    var box = modalState.box;
+    if (!box) {
+      showToast('Selecciona una caja de etiquetas para cambiar la asignación.', 'warn');
+      return;
     }
-    modalState.editingKey = key;
-  }
 
-  function confirmEdit(key) {
-    var inp = document.getElementById('inp-' + key);
-    if (!inp) return;
-    var raw = inp.value.trim();
-    if (!raw) {
-      delete modalState.tempEtq[key];
-      inp.classList.remove('invalid');
-      modalState.editingKey = null;
-      renderAssignTable();
-      return;
-    }
-    var num = parseInt(raw, 10);
-    if (isNaN(num) || num <= 0) {
-      inp.classList.add('invalid');
-      showToast('Ingresa un número de etiqueta válido.', 'error');
-      return;
-    }
-    // Validar que la etiqueta pertenezca a alguna caja del catálogo registrado
-    if (!isInCatalog(num)) {
-      inp.classList.add('invalid');
-      showToast('La etiqueta no pertenece a ninguna caja registrada en el catálogo.', 'error');
-      return;
-    }
-    // Verificar duplicados
+    // Incluye la etiqueta actual: al cambiar se consume y se toma la siguiente libre
+    var usedSet = {};
     for (var k in modalState.tempEtq) {
-      if (k !== key && modalState.tempEtq[k] === num) {
-        inp.classList.add('invalid');
-        showToast(MSG.MSG051, 'error');
-        return;
-      }
+      usedSet[modalState.tempEtq[k]] = true;
     }
-    inp.classList.remove('invalid');
-    modalState.tempEtq[key] = num;
-    modalState.editingKey = null;
-    renderAssignTable();
-  }
 
-  function cancelEdit(key) {
-    var disp = document.getElementById('disp-' + key);
-    var form = document.getElementById('edit-form-' + key);
-    if (disp) disp.classList.remove('hidden');
-    if (form) form.classList.add('hidden');
-    var inp = document.getElementById('inp-' + key);
-    if (inp) inp.classList.remove('invalid');
-    modalState.editingKey = null;
+    var next = nextAvailableLabel(box);
+    while (usedSet[next]) next++;
+    if (next > box.fin) {
+      showToast(MSG.MSG050, 'error');
+      return;
+    }
+
+    modalState.tempEtq[key] = next;
+    renderAssignTable();
   }
 
   function updateSaveBtn() {
