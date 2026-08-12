@@ -104,6 +104,18 @@
     .btn-primary:hover:not(:disabled) { background: var(--primary-color-hover); border-color: var(--primary-color-active); }
     .btn-outlined { background: #fff; color: #212529; border-color: #ced4da; }
     .btn-outlined:hover:not(:disabled) { background: #f8f9fa; border-color: #adb5bd; }
+    .btn-danger { background: var(--danger-color); color: #fff; border-color: var(--danger-color); }
+    .btn-danger:hover:not(:disabled) { background: var(--danger-hover); border-color: var(--danger-hover); }
+    .btn-outlined-danger {
+      background: #fff;
+      color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+    .btn-outlined-danger:hover:not(:disabled) {
+      background: #fdecea;
+      border-color: var(--danger-hover);
+      color: var(--danger-hover);
+    }
     .btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
     .btn-icon { padding: 0.4rem 0.65rem; }
     .btn-icon .pi { font-size: 0.9rem; }
@@ -317,6 +329,9 @@
     /* ── Modal ── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
     .modal-overlay.hidden { display: none; }
+    .modal-overlay--confirm { z-index: 1300; }
+    /* Mientras el confirm de liberar está abierto, el modal de asignación no recibe clics */
+    .modal-overlay.is-confirm-locked { pointer-events: none; }
     .modal-card {
       background: #fff;
       border-radius: 8px;
@@ -327,6 +342,7 @@
       display: flex;
       flex-direction: column;
     }
+    .modal-card--sm { max-width: 480px; }
     .modal-card__head {
       padding: 1.1rem 1.25rem 0.75rem;
       border-bottom: 1px solid var(--surface-200);
@@ -336,6 +352,8 @@
     .modal-card__subtitle { font-size: 0.8125rem; color: var(--text-color-secondary); }
     .modal-card__body { padding: 1rem 1.25rem; overflow-y: auto; flex: 1; }
     .modal-card__actions { padding: 0.9rem 1.25rem; border-top: 1px solid var(--surface-200); display: flex; justify-content: flex-end; gap: 0.5rem; flex-shrink: 0; }
+    .modal-card__actions--split { justify-content: space-between; align-items: center; }
+    .modal-card__actions-right { display: flex; gap: 0.5rem; align-items: center; }
 
     /* ── Modal controls row ── */
     .modal-controls-row {
@@ -367,6 +385,16 @@
     .asgn-table tbody tr { height: 2.75rem; }
     .asgn-table tbody tr:hover td { background: var(--surface-hover); }
     .asgn-table td.cell-editable { position: relative; }
+    .asgn-table .col-check { width: 2.5rem; text-align: center !important; padding-left: 0.5rem; padding-right: 0.5rem; }
+    .asgn-check {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--primary-color);
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .asgn-check:disabled { cursor: not-allowed; opacity: 0.4; }
+    .asgn-table tbody tr.is-selected td { background: var(--primary-50) !important; }
     /* Tarima header row (con bultos) — fila padre que abarca toda la anchura */
     .tarima-header-row td { background: var(--table-stripe); border-bottom: 1px solid var(--table-border); }
     .tarima-header-row:hover td { background: var(--surface-hover) !important; }
@@ -421,12 +449,16 @@
 
     /* ── Toast ── */
     .p-toast { position: fixed; top: 20px; right: 20px; width: 25rem; max-width: calc(100% - 40px); z-index: 1400; pointer-events: none; }
-    .p-toast .p-toast-message { margin: 0 0 0.75rem; border-radius: 6px; overflow: hidden; pointer-events: all; }
+    .p-toast .p-toast-message { margin: 0 0 0.75rem; border-radius: 6px; overflow: hidden; pointer-events: all; border: 1px solid transparent; }
     .p-toast .p-toast-message-content { display: flex; align-items: flex-start; padding: 0.85rem 1rem; }
     .p-toast .p-toast-message-icon { font-size: 1.1rem; margin-top: 0.1rem; flex-shrink: 0; }
     .p-toast .p-toast-message-text { flex: 1; margin-left: 0.65rem; font-size: 0.875rem; }
     .p-toast .p-toast-message-detail { color: inherit; }
-    .p-toast-icon-close { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border: none; background: transparent; cursor: pointer; border-radius: 50%; margin-left: auto; flex-shrink: 0; }
+    .p-toast-message-success { background: #e8f5e9; border-color: #c8e6c9; color: #1b5e20; }
+    .p-toast-message-error { background: #fdecea; border-color: #f5c2c7; color: #842029; }
+    .p-toast-message-warn { background: #fff8e1; border-color: #ffe082; color: #7a5c00; }
+    .p-toast-message-info { background: #e7f1ff; border-color: #b6d4fe; color: #084298; }
+    .p-toast-icon-close { display: flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border: none; background: transparent; cursor: pointer; border-radius: 50%; margin-left: auto; flex-shrink: 0; color: inherit; }
 
     /* ── Tooltip ── */
     .app-tooltip {
@@ -553,6 +585,9 @@
         <table class="asgn-table" id="asgnTable" aria-label="Tarimas y bultos">
           <thead>
             <tr>
+              <th class="col-check" scope="col">
+                <input type="checkbox" class="asgn-check" id="asgnSelectAll" aria-label="Seleccionar todas las tarimas y bultos con etiqueta asignada" disabled>
+              </th>
               <th style="width:180px">N° Tarima</th>
               <th style="width:160px">N° Bulto</th>
               <th>Etiqueta asignada</th>
@@ -583,14 +618,35 @@
 
     </div>
 
-    <div class="modal-card__actions">
-      <button type="button" class="btn btn-secondary" id="assignCancelBtn">Cancelar</button>
-      <button type="button" class="btn btn-primary" id="assignSaveBtn" disabled>
-        <i class="pi pi-save" aria-hidden="true"></i>
-        Guardar
+    <div class="modal-card__actions modal-card__actions--split">
+      <button type="button" class="btn btn-danger" id="liberarEtiquetasBtn" disabled>
+        Liberar etiquetas
       </button>
+      <div class="modal-card__actions-right">
+        <button type="button" class="btn btn-secondary" id="assignCancelBtn">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="assignSaveBtn" disabled>
+          <i class="pi pi-save" aria-hidden="true"></i>
+          Guardar
+        </button>
+      </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Confirmación — Liberar etiquetas -->
+<div id="liberarConfirmModal" class="modal-overlay modal-overlay--confirm hidden" role="dialog" aria-modal="true" aria-labelledby="liberarConfirmTitle">
+  <div class="modal-card modal-card--sm">
+    <div class="modal-card__head">
+      <div class="modal-card__title" id="liberarConfirmTitle">Liberar etiquetas</div>
+    </div>
+    <div class="modal-card__body" id="liberarConfirmBody">
+      ¿Deseas eliminar la asociación de las etiquetas para las tarimas y bultos seleccionadas?
+    </div>
+    <div class="modal-card__actions">
+      <button type="button" class="btn btn-secondary" id="liberarCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="liberarAcceptBtn">Aceptar</button>
+    </div>
   </div>
 </div>
 
@@ -613,8 +669,13 @@
   var MSG = {
     MSG049: 'Asignación de etiquetas completada correctamente.',
     MSG050: 'La caja seleccionada no tiene etiquetas suficientes para este CR.',
-    MSG052: 'Operación cancelada. No se realizaron cambios.'
+    MSG052: 'Operación cancelada. No se realizaron cambios.',
+    MSG_LIBERAR_CONFIRM: '¿Deseas eliminar la asociación de las etiquetas para las tarimas y bultos seleccionadas?',
+    MSG_LIBERAR_OK: 'Se ha eliminado la asociación de las etiquetas correctamente.'
   };
+
+  // Etiquetas desasociadas: permanecen en estatus "No disponible" y no pueden reasignarse
+  var RETIRED_LABELS = {};
 
   // ── DATOS — CAJAS ─────────────────────────────────────────
   var BOXES = [
@@ -637,11 +698,23 @@
     var usadas = box.usadasHasta != null
       ? Math.max(0, Math.min(box.usadasHasta, box.fin) - box.inicio + 1)
       : 0;
-    return total - usadas;
+    var available = total - usadas;
+    var startAvail = box.usadasHasta != null ? box.usadasHasta + 1 : box.inicio;
+    for (var n = startAvail; n <= box.fin; n++) {
+      if (RETIRED_LABELS[n]) available--;
+    }
+    return Math.max(0, available);
   }
 
   function nextAvailableLabel(box) {
-    return box.usadasHasta != null ? box.usadasHasta + 1 : box.inicio;
+    var next = box.usadasHasta != null ? box.usadasHasta + 1 : box.inicio;
+    while (next <= box.fin && RETIRED_LABELS[next]) next++;
+    return next;
+  }
+
+  function retireLabel(num) {
+    if (num == null) return;
+    RETIRED_LABELS[num] = true;
   }
 
   // ── DATOS — CRs ───────────────────────────────────────────
@@ -665,8 +738,8 @@
       updatedAt: new Date(2026, 3, 13, 15, 30, 10).toISOString(),
       createdAt: new Date(2026, 3, 13, 15, 30, 10).toISOString(),
       tarimas: [
-        { numero: 1, etiqueta: 2000, bultos: [{ numero: 101, etiqueta: 2001 }, { numero: 102, etiqueta: null }] },
-        { numero: 2, etiqueta: null, bultos: [] }
+        { numero: 1, etiqueta: null, bultos: [{ numero: 101, etiqueta: 2001 }, { numero: 102, etiqueta: 2002 }] },
+        { numero: 2, etiqueta: 2003, bultos: [] }
       ]
     },
     {
@@ -811,11 +884,13 @@
   var modalState = {
     cr: null,
     box: null,
-    tempEtq: {}  // key → etiqueta number
+    tempEtq: {},  // key → etiqueta number
+    selected: {}  // key → true (tarimas/bultos con etiqueta seleccionados para liberar)
   };
 
   // Estado de paginación del modal (independiente del listado principal)
   var asgnPagState = { page: 1, pageSize: 10 };
+  var unlockAssignModalTimer = null;
 
   // ── UTILIDADES ────────────────────────────────────────────
   function esc(s) {
@@ -1119,6 +1194,7 @@
     modalState.cr = cr;
     modalState.box = null;
     modalState.tempEtq = {};
+    modalState.selected = {};
     asgnPagState.page = 1;
 
     document.getElementById('assignModalSubtitle').textContent = ' ' + cr.id + ' ' + cr.nombre;
@@ -1138,6 +1214,7 @@
 
     hideBanner();
     document.getElementById('assignSaveBtn').disabled = true;
+    document.getElementById('liberarEtiquetasBtn').disabled = true;
     document.getElementById('asgnTableBody').innerHTML = '';
 
     // Render table with existing etiquetas (empty state initially)
@@ -1149,9 +1226,16 @@
 
   function closeAssignModal() {
     document.getElementById('assignModal').classList.add('hidden');
+    document.getElementById('assignModal').classList.remove('is-confirm-locked');
+    document.getElementById('liberarConfirmModal').classList.add('hidden');
+    if (unlockAssignModalTimer) {
+      clearTimeout(unlockAssignModalTimer);
+      unlockAssignModalTimer = null;
+    }
     modalState.cr = null;
     modalState.box = null;
     modalState.tempEtq = {};
+    modalState.selected = {};
   }
 
   function hideBanner() {
@@ -1172,9 +1256,69 @@
     return originalVal;
   }
 
+  // Filas liberables: tarimas sin bultos o bultos que ya tienen etiqueta asignada
+  function getLiberableItems() {
+    var cr = modalState.cr;
+    var items = [];
+    if (!cr) return items;
+    cr.tarimas.forEach(function (t) {
+      if (t.bultos.length > 0) {
+        t.bultos.forEach(function (b) {
+          var bKey = 'B' + cr.id + '_' + t.numero + '_' + b.numero;
+          var etq = getEtiqueta(bKey, b.etiqueta);
+          if (etq != null) items.push({ key: bKey, type: 'bulto', t: t, b: b, etiqueta: etq });
+        });
+      } else {
+        var tKey = 'T' + cr.id + '_' + t.numero;
+        var etqT = getEtiqueta(tKey, t.etiqueta);
+        if (etqT != null) items.push({ key: tKey, type: 'tarima', t: t, etiqueta: etqT });
+      }
+    });
+    return items;
+  }
+
+  function countSelectedLiberable() {
+    var n = 0;
+    getLiberableItems().forEach(function (item) {
+      if (modalState.selected[item.key]) n++;
+    });
+    return n;
+  }
+
+  function updateLiberarBtn() {
+    var btn = document.getElementById('liberarEtiquetasBtn');
+    if (btn) btn.disabled = countSelectedLiberable() === 0;
+  }
+
+  function updateSelectAllCheckbox() {
+    var cb = document.getElementById('asgnSelectAll');
+    if (!cb) return;
+    var items = getLiberableItems();
+    if (items.length === 0) {
+      cb.checked = false;
+      cb.indeterminate = false;
+      cb.disabled = true;
+      return;
+    }
+    cb.disabled = false;
+    var selectedCount = 0;
+    items.forEach(function (item) {
+      if (modalState.selected[item.key]) selectedCount++;
+    });
+    cb.checked = selectedCount === items.length;
+    cb.indeterminate = selectedCount > 0 && selectedCount < items.length;
+  }
+
   function renderAssignTable() {
     var cr = modalState.cr;
     if (!cr) return;
+
+    // Limpiar selección de claves que ya no tienen etiqueta
+    var liberableKeys = {};
+    getLiberableItems().forEach(function (item) { liberableKeys[item.key] = true; });
+    Object.keys(modalState.selected).forEach(function (k) {
+      if (!liberableKeys[k]) delete modalState.selected[k];
+    });
 
     // Construir filas de dos niveles:
     // - Tarima con bultos: fila cabecera (sin etiqueta) + filas hijas por bulto
@@ -1209,10 +1353,10 @@
         tr.className = 'tarima-header-row';
         tr.innerHTML = buildTarimaHeaderRow(o);
       } else if (o.type === 'bulto') {
-        tr.className = 'bulto-child-row';
+        tr.className = 'bulto-child-row' + (modalState.selected[o.bKey] ? ' is-selected' : '');
         tr.innerHTML = buildBultoChildRow(o);
       } else {
-        tr.className = 'tarima-only-row';
+        tr.className = 'tarima-only-row' + (modalState.selected[o.tKey] ? ' is-selected' : '');
         tr.innerHTML = buildTarimaOnlyRow(o);
       }
       tbody.appendChild(tr);
@@ -1235,6 +1379,21 @@
       btn.addEventListener('click', function () { reassignLabel(btn.getAttribute('data-btn-reassign')); });
     });
 
+    // Bind checkboxes de selección
+    tbody.querySelectorAll('[data-asgn-check]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var key = cb.getAttribute('data-asgn-check');
+        if (cb.checked) modalState.selected[key] = true;
+        else delete modalState.selected[key];
+        updateLiberarBtn();
+        updateSelectAllCheckbox();
+        var row = cb.closest('tr');
+        if (row) row.classList.toggle('is-selected', cb.checked);
+      });
+    });
+
+    updateSelectAllCheckbox();
+    updateLiberarBtn();
     updateSaveBtn();
   }
 
@@ -1268,20 +1427,34 @@
 
   /* ---- Constructores de filas de dos niveles ---- */
 
+  function buildCheckCell(key, hasLabel) {
+    if (!hasLabel) {
+      return '<td class="col-check"></td>';
+    }
+    var checked = modalState.selected[key] ? ' checked' : '';
+    return '<td class="col-check">' +
+      '<input type="checkbox" class="asgn-check" data-asgn-check="' + esc(key) + '"' +
+      checked + ' aria-label="Seleccionar para liberar etiqueta">' +
+      '</td>';
+  }
+
   function buildTarimaHeaderRow(o) {
-    return '<td colspan="3" class="tarima-group-cell"><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>';
+    return '<td class="col-check"></td>' +
+           '<td colspan="3" class="tarima-group-cell"><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>';
   }
 
   function buildBultoChildRow(o) {
     var etqHtml = buildEditableCell(o.bKey, o.etqBulto);
-    return '<td class="bulto-indent-col"></td>' +
+    return buildCheckCell(o.bKey, o.etqBulto != null) +
+           '<td class="bulto-indent-col"></td>' +
            '<td>Bulto ' + esc(o.b.numero) + '</td>' +
            '<td class="cell-editable">' + etqHtml + '</td>';
   }
 
   function buildTarimaOnlyRow(o) {
     var etqHtml = buildEditableCell(o.tKey, o.etqTarima);
-    return '<td><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>' +
+    return buildCheckCell(o.tKey, o.etqTarima != null) +
+           '<td><span class="tarima-label">Tarima ' + esc(o.t.numero) + '</span></td>' +
            '<td><span style="color:#94a3b8;font-size:.8rem;">Sin bultos</span></td>' +
            '<td class="cell-editable">' + etqHtml + '</td>';
   }
@@ -1320,7 +1493,7 @@
     }
 
     var next = nextAvailableLabel(box);
-    while (usedSet[next]) next++;
+    while (usedSet[next] || RETIRED_LABELS[next]) next++;
     if (next > box.fin) {
       showToast(MSG.MSG050, 'error');
       return;
@@ -1359,7 +1532,7 @@
     for (var k in modalState.tempEtq) { usedSet[modalState.tempEtq[k]] = true; }
 
     function assignNext() {
-      while (usedSet[next]) next++;
+      while (usedSet[next] || RETIRED_LABELS[next]) next++;
       if (next > box.fin) return false;
       usedSet[next] = true;
       return next++;
@@ -1386,6 +1559,87 @@
     });
 
     renderAssignTable();
+  }
+
+  // ── LIBERAR ETIQUETAS ─────────────────────────────────────
+  function lockAssignModalForConfirm() {
+    var assignModal = document.getElementById('assignModal');
+    assignModal.classList.add('is-confirm-locked');
+    if (unlockAssignModalTimer) {
+      clearTimeout(unlockAssignModalTimer);
+      unlockAssignModalTimer = null;
+    }
+  }
+
+  function unlockAssignModalAfterConfirm() {
+    if (unlockAssignModalTimer) clearTimeout(unlockAssignModalTimer);
+    // Retraso para absorber el clic fantasma al cerrar el confirm
+    unlockAssignModalTimer = setTimeout(function () {
+      document.getElementById('assignModal').classList.remove('is-confirm-locked');
+      unlockAssignModalTimer = null;
+    }, 400);
+  }
+
+  function openLiberarConfirm() {
+    if (countSelectedLiberable() === 0) return;
+    document.getElementById('liberarConfirmBody').textContent = MSG.MSG_LIBERAR_CONFIRM;
+    lockAssignModalForConfirm();
+    document.getElementById('liberarConfirmModal').classList.remove('hidden');
+    document.getElementById('liberarAcceptBtn').focus();
+  }
+
+  function closeLiberarConfirm() {
+    document.getElementById('liberarConfirmModal').classList.add('hidden');
+    unlockAssignModalAfterConfirm();
+  }
+
+  function confirmLiberarEtiquetas() {
+    var cr = modalState.cr;
+    if (!cr) return;
+
+    var toLiberate = getLiberableItems().filter(function (item) {
+      return !!modalState.selected[item.key];
+    });
+    if (toLiberate.length === 0) {
+      closeLiberarConfirm();
+      return;
+    }
+
+    toLiberate.forEach(function (item) {
+      retireLabel(item.etiqueta);
+      delete modalState.tempEtq[item.key];
+      delete modalState.selected[item.key];
+
+      if (item.type === 'tarima') {
+        item.t.etiqueta = null;
+      } else if (item.type === 'bulto') {
+        item.b.etiqueta = null;
+      }
+    });
+
+    closeLiberarConfirm();
+    showToast(MSG.MSG_LIBERAR_OK, 'success');
+    renderAssignTable();
+
+    // Refrescar contadores del selector de caja (disponibles no aumentan: quedan No disponible)
+    var sel = document.getElementById('boxSelect');
+    var current = sel.value;
+    var opts = sel.querySelectorAll('option');
+    for (var i = 0; i < opts.length; i++) {
+      var opt = opts[i];
+      if (!opt.value) continue;
+      var box = BOXES.find(function (b) { return b.id === opt.value; });
+      if (!box) continue;
+      var disp = boxDisponibles(box);
+      opt.textContent = box.nombre + ' (' + disp + ' disponibles)';
+      opt.disabled = disp === 0;
+      if (disp === 0) opt.textContent += ' — Sin disponibles';
+    }
+    sel.value = current;
+    if (modalState.box) {
+      var d = boxDisponibles(modalState.box);
+      showBanner('"' + modalState.box.nombre + '" ' + d + ' etiquetas disponibles. Rango: ' + modalState.box.inicio + ' a ' + modalState.box.fin + '.', false);
+    }
   }
 
   // ── SAVE ──────────────────────────────────────────────────
@@ -1459,10 +1713,41 @@
     var box = BOXES.find(function (b) { return b.id === boxId; });
     modalState.box = box;
     // Resetear asignaciones temporales al cambiar de caja y reasignar desde cero
+    // Conservar selección solo de etiquetas ya persistidas (no temporales)
     modalState.tempEtq = {};
     asgnPagState.page = 1;
     // Per HU: "Al seleccionar una caja del listado, se realiza la asignación automática"
     autoAssign();
+  });
+
+  // Seleccionar todas las tarimas/bultos con etiqueta asignada
+  document.getElementById('asgnSelectAll').addEventListener('change', function () {
+    var selectAll = this.checked;
+    getLiberableItems().forEach(function (item) {
+      if (selectAll) modalState.selected[item.key] = true;
+      else delete modalState.selected[item.key];
+    });
+    renderAssignTable();
+  });
+
+  // Liberar etiquetas
+  document.getElementById('liberarEtiquetasBtn').addEventListener('click', openLiberarConfirm);
+  document.getElementById('liberarCancelBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLiberarConfirm();
+  });
+  document.getElementById('liberarAcceptBtn').addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    confirmLiberarEtiquetas();
+  });
+  document.getElementById('liberarConfirmModal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeLiberarConfirm();
+    }
   });
 
   // Paginador del modal
@@ -1493,8 +1778,8 @@
   });
 
   document.getElementById('assignCancelBtn').addEventListener('click', function () {
+    // Solo cierra el modal de asignación; sin toast (el cancelar de liberar no debe notificar cancelación)
     closeAssignModal();
-    showToast(MSG.MSG052, 'info');
   });
 
   document.getElementById('assignSaveBtn').addEventListener('click', saveAssignments);
