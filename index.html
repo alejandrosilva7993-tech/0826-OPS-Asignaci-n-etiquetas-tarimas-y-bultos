@@ -358,12 +358,68 @@
     /* ── Modal controls row ── */
     .modal-controls-row {
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 0.75rem;
       margin-bottom: 0.85rem;
       flex-wrap: wrap;
     }
     .modal-controls-row .ctrl-field { flex: 0 0 auto; width: 280px; min-width: 180px; }
+    .modal-controls-row .ctrl-field--boxes { width: 100%; max-width: 420px; min-width: 260px; }
+
+    /* ── Listado fijo de cajas (selección múltiple) ── */
+    .box-list {
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      background: #fff;
+      overflow: hidden;
+    }
+    .box-list:focus-within { border-color: #86b7fe; box-shadow: 0 0 0 0.2rem var(--focus-ring); }
+    .box-list__select-all {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.75rem;
+      min-height: 2.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-color);
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      cursor: pointer;
+      user-select: none;
+    }
+    .box-list__select-all input { accent-color: var(--primary-color); width: 1rem; height: 1rem; flex-shrink: 0; cursor: pointer; }
+    .box-list__scroll {
+      max-height: calc(2.25rem * 10);
+      overflow-y: auto;
+    }
+    .box-list__item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      min-height: 2.25rem;
+      font-size: 0.875rem;
+      color: var(--text-color);
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      user-select: none;
+    }
+    .box-list__item:last-child { border-bottom: none; }
+    .box-list__item:hover { background: #f8fafc; }
+    .box-list__item.is-disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      color: #64748b;
+    }
+    .box-list__item input { accent-color: var(--primary-color); width: 1rem; height: 1rem; flex-shrink: 0; cursor: pointer; }
+    .box-list__item.is-disabled input { cursor: not-allowed; }
+    .box-list__item-text { flex: 1; min-width: 0; line-height: 1.25; }
+    .box-list__empty {
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-color-secondary);
+    }
 
     /* ── Info inline (solo icono + texto, sin estilo banner) ── */
     .info-callout {
@@ -564,13 +620,17 @@
 
     <div class="modal-card__body">
 
-      <!-- Selector de caja -->
+      <!-- Selector de cajas (listado fijo, selección múltiple) -->
       <div class="modal-controls-row">
-        <div class="ctrl-field">
-          <label class="field-label" for="boxSelect">Caja de etiquetas <span style="color:#dc2626">*</span></label>
-          <select id="boxSelect" class="form-select" aria-label="Selecciona la caja de etiquetas">
-            <option value="">Selecciona una caja</option>
-          </select>
+        <div class="ctrl-field ctrl-field--boxes">
+          <span class="field-label" id="boxListLabel">Cajas de etiquetas <span style="color:#dc2626">*</span></span>
+          <div class="box-list" id="boxList" role="group" aria-labelledby="boxListLabel">
+            <label class="box-list__select-all" for="boxSelectAll">
+              <input type="checkbox" id="boxSelectAll" aria-label="Seleccionar todas las cajas">
+              <span>Seleccionar todo</span>
+            </label>
+            <div class="box-list__scroll" id="boxListScroll" role="list"></div>
+          </div>
         </div>
       </div>
 
@@ -668,7 +728,7 @@
   // ── MENSAJES ──────────────────────────────────────────────
   var MSG = {
     MSG049: 'Asignación de etiquetas completada correctamente.',
-    MSG050: 'La caja seleccionada no tiene etiquetas suficientes para este CR.',
+    MSG050: 'Las cajas seleccionadas no tienen etiquetas suficientes para este CR.',
     MSG052: 'Operación cancelada. No se realizaron cambios.',
     MSG_LIBERAR_CONFIRM: '¿Deseas eliminar la asociación de las etiquetas para las tarimas y bultos seleccionadas?',
     MSG_LIBERAR_OK: 'Se ha eliminado la asociación de las etiquetas correctamente.'
@@ -710,6 +770,38 @@
     var next = box.usadasHasta != null ? box.usadasHasta + 1 : box.inicio;
     while (next <= box.fin && RETIRED_LABELS[next]) next++;
     return next;
+  }
+
+  function getSelectedBoxes() {
+    return BOXES.filter(function (b) { return !!modalState.selectedBoxes[b.id]; });
+  }
+
+  function totalDisponibles(boxes) {
+    var sum = 0;
+    (boxes || []).forEach(function (b) { sum += boxDisponibles(b); });
+    return sum;
+  }
+
+  /** Siguiente etiqueta libre entre las cajas seleccionadas (en orden del listado). */
+  function nextAvailableFromBoxes(boxes, usedSet) {
+    for (var i = 0; i < boxes.length; i++) {
+      var box = boxes[i];
+      var next = nextAvailableLabel(box);
+      while (next <= box.fin && ((usedSet && usedSet[next]) || RETIRED_LABELS[next])) next++;
+      if (next <= box.fin) return next;
+    }
+    return null;
+  }
+
+  function formatBoxesBanner(boxes) {
+    if (!boxes || boxes.length === 0) return '';
+    if (boxes.length === 1) {
+      var b = boxes[0];
+      return '"' + b.nombre + '" ' + boxDisponibles(b) + ' etiquetas disponibles. Rango: ' + b.inicio + ' a ' + b.fin + '.';
+    }
+    var total = totalDisponibles(boxes);
+    var names = boxes.map(function (x) { return x.nombre; }).join(', ');
+    return boxes.length + ' cajas seleccionadas (' + names + '). ' + total + ' etiquetas disponibles en total.';
   }
 
   function retireLabel(num) {
@@ -883,7 +975,7 @@
 
   var modalState = {
     cr: null,
-    box: null,
+    selectedBoxes: {},  // boxId → true (cajas seleccionadas para asignación)
     tempEtq: {},  // key → etiqueta number
     selected: {}  // key → true (tarimas/bultos con etiqueta seleccionados para liberar)
   };
@@ -1187,30 +1279,81 @@
   }
 
   // ── MODAL ASIGNACIÓN ──────────────────────────────────────
+  function renderBoxList() {
+    var scroll = document.getElementById('boxListScroll');
+    scroll.innerHTML = '';
+    BOXES.forEach(function (box) {
+      var disp = boxDisponibles(box);
+      var disabled = disp === 0;
+      var checked = !!modalState.selectedBoxes[box.id] && !disabled;
+      if (disabled) delete modalState.selectedBoxes[box.id];
+
+      var label = document.createElement('label');
+      label.className = 'box-list__item' + (disabled ? ' is-disabled' : '');
+      label.setAttribute('role', 'listitem');
+
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = box.id;
+      cb.checked = checked;
+      cb.disabled = disabled;
+      cb.setAttribute('data-box-id', box.id);
+      cb.setAttribute('aria-label', box.nombre + ', ' + disp + ' disponibles');
+
+      var text = document.createElement('span');
+      text.className = 'box-list__item-text';
+      text.textContent = box.nombre + ' (' + disp + ' disponibles)' + (disabled ? ' — Sin disponibles' : '');
+
+      label.appendChild(cb);
+      label.appendChild(text);
+      scroll.appendChild(label);
+    });
+    updateBoxSelectAllCheckbox();
+  }
+
+  function updateBoxSelectAllCheckbox() {
+    var cb = document.getElementById('boxSelectAll');
+    if (!cb) return;
+    var selectable = BOXES.filter(function (b) { return boxDisponibles(b) > 0; });
+    cb.disabled = selectable.length === 0;
+    if (selectable.length === 0) {
+      cb.checked = false;
+      cb.indeterminate = false;
+      return;
+    }
+    var selectedCount = selectable.filter(function (b) { return !!modalState.selectedBoxes[b.id]; }).length;
+    cb.checked = selectedCount === selectable.length;
+    cb.indeterminate = selectedCount > 0 && selectedCount < selectable.length;
+  }
+
+  function onBoxSelectionChange() {
+    modalState.tempEtq = {};
+    asgnPagState.page = 1;
+    var boxes = getSelectedBoxes();
+    if (boxes.length === 0) {
+      hideBanner();
+      renderAssignTable();
+      return;
+    }
+    // Per HU: al seleccionar cajas del listado, se realiza la asignación automática
+    autoAssign();
+  }
+
   function openAssignModal(crId) {
     var cr = CRS.find(function (c) { return c.id === crId; });
     if (!cr) return;
 
     modalState.cr = cr;
-    modalState.box = null;
+    modalState.selectedBoxes = {};
     modalState.tempEtq = {};
     modalState.selected = {};
     asgnPagState.page = 1;
 
     document.getElementById('assignModalSubtitle').textContent = ' ' + cr.id + ' ' + cr.nombre;
 
-    // Populate dropdown
-    var sel = document.getElementById('boxSelect');
-    sel.innerHTML = '<option value="">Selecciona una caja</option>';
-    BOXES.forEach(function (box) {
-      var disp = boxDisponibles(box);
-      var o = document.createElement('option');
-      o.value = box.id;
-      o.textContent = box.nombre + ' (' + disp + ' disponibles)';
-      if (disp === 0) { o.disabled = true; o.textContent += ' — Sin disponibles'; }
-      sel.appendChild(o);
-    });
-    sel.value = '';
+    renderBoxList();
+    document.getElementById('boxSelectAll').checked = false;
+    document.getElementById('boxSelectAll').indeterminate = false;
 
     hideBanner();
     document.getElementById('assignSaveBtn').disabled = true;
@@ -1221,7 +1364,9 @@
     renderAssignTable();
 
     document.getElementById('assignModal').classList.remove('hidden');
-    document.getElementById('boxSelect').focus();
+    var firstCb = document.querySelector('#boxListScroll input[type="checkbox"]:not(:disabled)');
+    if (firstCb) firstCb.focus();
+    else document.getElementById('boxSelectAll').focus();
   }
 
   function closeAssignModal() {
@@ -1233,7 +1378,7 @@
       unlockAssignModalTimer = null;
     }
     modalState.cr = null;
-    modalState.box = null;
+    modalState.selectedBoxes = {};
     modalState.tempEtq = {};
     modalState.selected = {};
   }
@@ -1463,10 +1608,10 @@
   function buildEditableCell(key, currentVal) {
     var valClass = currentVal != null ? 'etq-assigned' : 'etq-empty';
     var valText  = currentVal != null ? esc(currentVal) : 'Sin asignar';
-    var hasBox = !!modalState.box;
+    var hasBox = getSelectedBoxes().length > 0;
     var tip = hasBox
       ? 'Cambiar a la siguiente etiqueta disponible'
-      : 'Selecciona una caja para cambiar la etiqueta';
+      : 'Selecciona una o más cajas para cambiar la etiqueta';
 
     return '<span class="etq-cell-disp">' +
         '<span class="etq-value ' + valClass + '">' + valText + '</span>' +
@@ -1478,11 +1623,11 @@
       '</span>';
   }
 
-  // Asigna automáticamente la siguiente etiqueta disponible de la caja seleccionada
+  // Asigna automáticamente la siguiente etiqueta disponible de las cajas seleccionadas
   function reassignLabel(key) {
-    var box = modalState.box;
-    if (!box) {
-      showToast('Selecciona una caja de etiquetas para cambiar la asignación.', 'warn');
+    var boxes = getSelectedBoxes();
+    if (boxes.length === 0) {
+      showToast('Selecciona una o más cajas de etiquetas para cambiar la asignación.', 'warn');
       return;
     }
 
@@ -1492,9 +1637,8 @@
       usedSet[modalState.tempEtq[k]] = true;
     }
 
-    var next = nextAvailableLabel(box);
-    while (usedSet[next] || RETIRED_LABELS[next]) next++;
-    if (next > box.fin) {
+    var next = nextAvailableFromBoxes(boxes, usedSet);
+    if (next == null) {
       showToast(MSG.MSG050, 'error');
       return;
     }
@@ -1513,29 +1657,28 @@
   // ── AUTO ASSIGN ───────────────────────────────────────────
   function autoAssign() {
     var cr = modalState.cr;
-    var box = modalState.box;
-    if (!cr || !box) return;
+    var boxes = getSelectedBoxes();
+    if (!cr || boxes.length === 0) return;
 
-    var disp = boxDisponibles(box);
+    var disp = totalDisponibles(boxes);
     var counts = countNeeded(cr);
     var needed = counts.total - counts.assigned;
 
     if (needed > disp) {
-      showBanner(MSG.MSG050 + ' Se necesitan ' + needed + ' etiquetas, disponibles ' + disp + '. Selecciona otra caja para completar.', true);
+      showBanner(MSG.MSG050 + ' Se necesitan ' + needed + ' etiquetas, disponibles ' + disp + '. Selecciona más cajas para completar.', true);
     } else {
-      showBanner('"' + box.nombre + '" ' + disp + ' etiquetas disponibles. Rango: ' + box.inicio + ' a ' + box.fin + '.', false);
+      showBanner(formatBoxesBanner(boxes), false);
     }
 
-    var next = nextAvailableLabel(box);
     // Already-used in tempEtq
     var usedSet = {};
     for (var k in modalState.tempEtq) { usedSet[modalState.tempEtq[k]] = true; }
 
     function assignNext() {
-      while (usedSet[next] || RETIRED_LABELS[next]) next++;
-      if (next > box.fin) return false;
-      usedSet[next] = true;
-      return next++;
+      var n = nextAvailableFromBoxes(boxes, usedSet);
+      if (n == null) return false;
+      usedSet[n] = true;
+      return n;
     }
 
     // 1. Tarimas sin bultos: asignar etiqueta a la tarima
@@ -1621,24 +1764,11 @@
     showToast(MSG.MSG_LIBERAR_OK, 'success');
     renderAssignTable();
 
-    // Refrescar contadores del selector de caja (disponibles no aumentan: quedan No disponible)
-    var sel = document.getElementById('boxSelect');
-    var current = sel.value;
-    var opts = sel.querySelectorAll('option');
-    for (var i = 0; i < opts.length; i++) {
-      var opt = opts[i];
-      if (!opt.value) continue;
-      var box = BOXES.find(function (b) { return b.id === opt.value; });
-      if (!box) continue;
-      var disp = boxDisponibles(box);
-      opt.textContent = box.nombre + ' (' + disp + ' disponibles)';
-      opt.disabled = disp === 0;
-      if (disp === 0) opt.textContent += ' — Sin disponibles';
-    }
-    sel.value = current;
-    if (modalState.box) {
-      var d = boxDisponibles(modalState.box);
-      showBanner('"' + modalState.box.nombre + '" ' + d + ' etiquetas disponibles. Rango: ' + modalState.box.inicio + ' a ' + modalState.box.fin + '.', false);
+    // Refrescar contadores del listado de cajas (disponibles no aumentan: quedan No disponible)
+    renderBoxList();
+    var boxes = getSelectedBoxes();
+    if (boxes.length > 0) {
+      showBanner(formatBoxesBanner(boxes), false);
     }
   }
 
@@ -1701,23 +1831,28 @@
   });
 
   // ── MODAL EVENTS ──────────────────────────────────────────
-  document.getElementById('boxSelect').addEventListener('change', function () {
-    var boxId = this.value;
-    if (!boxId) {
-      modalState.box = null;
-      modalState.tempEtq = {};
-      hideBanner();
-      renderAssignTable();
-      return;
-    }
-    var box = BOXES.find(function (b) { return b.id === boxId; });
-    modalState.box = box;
-    // Resetear asignaciones temporales al cambiar de caja y reasignar desde cero
-    // Conservar selección solo de etiquetas ya persistidas (no temporales)
-    modalState.tempEtq = {};
-    asgnPagState.page = 1;
-    // Per HU: "Al seleccionar una caja del listado, se realiza la asignación automática"
-    autoAssign();
+  document.getElementById('boxListScroll').addEventListener('change', function (e) {
+    var cb = e.target;
+    if (!cb || cb.type !== 'checkbox' || !cb.hasAttribute('data-box-id')) return;
+    var boxId = cb.getAttribute('data-box-id');
+    if (cb.checked) modalState.selectedBoxes[boxId] = true;
+    else delete modalState.selectedBoxes[boxId];
+    updateBoxSelectAllCheckbox();
+    onBoxSelectionChange();
+  });
+
+  document.getElementById('boxSelectAll').addEventListener('change', function () {
+    var selectAll = this.checked;
+    BOXES.forEach(function (box) {
+      if (boxDisponibles(box) === 0) {
+        delete modalState.selectedBoxes[box.id];
+        return;
+      }
+      if (selectAll) modalState.selectedBoxes[box.id] = true;
+      else delete modalState.selectedBoxes[box.id];
+    });
+    renderBoxList();
+    onBoxSelectionChange();
   });
 
   // Seleccionar todas las tarimas/bultos con etiqueta asignada
